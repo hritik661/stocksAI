@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Nifty 50 logo background -->
+  <rect width="200" height="200" fill="#1e3a8a" rx="20"/>
+  <!-- Nifty 50 text -->
+  <text x="100" y="80" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="32" font-weight="bold">NIFTY</text>
+  <text x="100" y="110" text-anchor="middle" fill="#fbbf24" font-family="Arial, sans-serif" font-size="24" font-weight="bold">50</text>
+  <!-- Index symbol -->
+  <circle cx="100" cy="140" r="15" fill="#10b981"/>
+  <text x="100" y="147" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="bold">₹</text>
+</svg>

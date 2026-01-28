@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Bank Nifty logo background -->
+  <rect width="200" height="200" fill="#1e40af" rx="20"/>
+  <!-- Bank Nifty text -->
+  <text x="100" y="60" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="18" font-weight="bold">BANK</text>
+  <text x="100" y="85" text-anchor="middle" fill="#fbbf24" font-family="Arial, sans-serif" font-size="18" font-weight="bold">NIFTY</text>
+  <!-- Bank building symbol -->
+  <rect x="60" y="100" width="80" height="50" fill="#fbbf24" rx="3"/>
+  <!-- Windows -->
+  <rect x="70" y="110" width="15" height="12" fill="#1e40af"/>
+  <rect x="90" y="110" width="15" height="12" fill="#1e40af"/>
+  <rect x="110" y="110" width="15" height="12" fill="#1e40af"/>
+  <rect x="70" y="130" width="15" height="12" fill="#1e40af"/>
+  <rect x="90" y="130" width="15" height="12" fill="#1e40af"/>
+  <rect x="110" y="130" width="15" height="12" fill="#1e40af"/>
+  <!-- Door -->
+  <rect x="95" y="125" width="10" height="25" fill="#dc2626"/>
+</svg>

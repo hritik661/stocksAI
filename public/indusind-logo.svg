@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- IndusInd Bank logo background -->
+  <rect width="200" height="200" fill="#007CC7" rx="20"/>
+  <!-- IndusInd Bank text -->
+  <text x="100" y="70" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="20" font-weight="bold">INDUSIND</text>
+  <text x="100" y="95" text-anchor="middle" fill="#FFD700" font-family="Arial, sans-serif" font-size="16" font-weight="bold">BANK</text>
+  <!-- Bank symbol -->
+  <rect x="70" y="110" width="60" height="35" fill="#FFD700" rx="5"/>
+  <circle cx="85" cy="127" r="8" fill="#007CC7"/>
+  <circle cx="115" cy="127" r="8" fill="#007CC7"/>
+  <text x="100" y="135" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10" font-weight="bold">₹</text>
+</svg>
