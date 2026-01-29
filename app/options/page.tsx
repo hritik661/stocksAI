@@ -78,6 +78,7 @@ export default function OptionsPage() {
   const [error, setError] = useState<string | null>(null)
   const [loadingChain, setLoadingChain] = useState(false)
   const [pricesLoading, setPricesLoading] = useState(true)
+  const [strikesByIndex, setStrikesByIndex] = useState<Record<string, OptionStrike[]>>({})
 
   // Fetch indices prices from API
   useEffect(() => {
@@ -211,6 +212,46 @@ export default function OptionsPage() {
     return () => clearInterval(interval)
   }, [selectedIndex.symbol, selectedIndex.strikeGap, marketOpen])
 
+  // Fetch option chains for all indices with open positions - refresh periodically
+  useEffect(() => {
+    if (positions.length === 0) return
+
+    const uniqueIndices = Array.from(new Set(positions.map((p) => p.index)))
+
+    const fetchAllChainsForPositions = () => {
+      uniqueIndices.forEach((index) => {
+        const indexConfig = INDIAN_INDICES.find((i) => i.symbol === index)
+        if (!indexConfig) return
+
+        const fetchChainForIndex = async () => {
+          try {
+            const response = await fetch(
+              `/api/options/chain?symbol=${index}&strikeGap=${indexConfig.strikeGap}`
+            )
+            if (response.ok) {
+              const data = await response.json()
+              if (data.strikes && Array.isArray(data.strikes)) {
+                setStrikesByIndex((prev) => ({
+                  ...prev,
+                  [index]: data.strikes,
+                }))
+              }
+            }
+          } catch (error) {
+            console.error(`Error fetching chain for ${index}:`, error)
+          }
+        }
+
+        fetchChainForIndex()
+      })
+    }
+
+    // Fetch immediately and then refresh periodically
+    fetchAllChainsForPositions()
+    const interval = setInterval(fetchAllChainsForPositions, marketOpen ? 10000 : 60000)
+    return () => clearInterval(interval)
+  }, [positions, marketOpen])
+
   const handleOptionClick = (type: "CE" | "PE", strike: number, price: number) => {
     try {
       setSelectedOption({ type, strike, price })
@@ -282,12 +323,27 @@ export default function OptionsPage() {
     try {
       if (!user) return
 
-      // Get current price from strikes
-      let currentPrice = position.price
-      const strike = strikes.find((s) => s.strike === position.strike)
-      if (strike) {
-        currentPrice = position.type === "CE" ? strike.cePrice : strike.pePrice
+      // Check if market is open
+      const marketStatus = isMarketOpen()
+
+      // Get current price from strikes for this specific position's index
+      let currentPrice = position.price // Default to entry price
+      
+      if (marketStatus.isOpen) {
+        // Market is OPEN - fetch live prices
+        const positionStrikes = strikesByIndex[position.index] || []
+        let strike = positionStrikes.find((s) => s.strike === position.strike)
+        
+        // If not found, check the main strikes if it's for the selected index
+        if (!strike && position.index === selectedIndex.symbol) {
+          strike = strikes.find((s) => s.strike === position.strike)
+        }
+        
+        if (strike) {
+          currentPrice = position.type === "CE" ? strike.cePrice : strike.pePrice
+        }
       }
+      // If market is CLOSED, currentPrice stays as position.price (entry price)
 
       // Calculate P&L using proper options calculator
       const pnl = calculateOptionsPnL(position.price, currentPrice, position.action, position.quantity, position.lotSize)
@@ -333,15 +389,7 @@ export default function OptionsPage() {
           </Card>
         )}
 
-        {!marketOpen && (
-          <Card className="mb-4 md:mb-6 border-yellow-600/50 bg-yellow-600/10">
-            <CardContent className="p-3 md:p-4">
-              <p className="text-yellow-600 text-sm font-semibold">
-                ⏰ Market is Closed - P&L calculations are based on last trading prices. Prices will not update until market opens.
-              </p>
-            </CardContent>
-          </Card>
-        )}
+      
 
         <div className="flex items-center gap-1.5 md:gap-3 mb-3 md:mb-6">
           <div className="h-6 w-6 md:h-8 md:w-8 rounded-full bg-primary/20 flex items-center justify-center">
@@ -435,17 +483,33 @@ export default function OptionsPage() {
                     try {
                       if (!user) return
 
+                      // Check if market is open
+                      const marketStatus = isMarketOpen()
+
                       let totalCredit = 0
                       let totalProfit = 0
                       let totalLoss = 0
 
                       positions.forEach((pos) => {
-                        // Get current price from strikes
+                        // Get current price from strikes for this specific position's index
+                        // BUT only if market is open
                         let currentPrice = pos.price
-                        const strike = strikes.find((s) => s.strike === pos.strike)
-                        if (strike) {
-                          currentPrice = pos.type === "CE" ? strike.cePrice : strike.pePrice
+                        
+                        if (marketStatus.isOpen) {
+                          // Market is OPEN - fetch live prices
+                          const positionStrikes = strikesByIndex[pos.index] || []
+                          let strike = positionStrikes.find((s) => s.strike === pos.strike)
+                          
+                          // If not found, check the main strikes if it's for the selected index
+                          if (!strike && pos.index === selectedIndex.symbol) {
+                            strike = strikes.find((s) => s.strike === pos.strike)
+                          }
+                          
+                          if (strike) {
+                            currentPrice = pos.type === "CE" ? strike.cePrice : strike.pePrice
+                          }
                         }
+                        // If market is CLOSED, currentPrice stays as pos.price (entry price)
 
                         // Calculate P&L using proper options calculator
                         const pnl = calculateOptionsPnL(pos.price, currentPrice, pos.action, pos.quantity, pos.lotSize)
@@ -490,7 +554,8 @@ export default function OptionsPage() {
                       <TableHead className="text-xs md:text-sm">Type</TableHead>
                       <TableHead className="text-xs md:text-sm">Action</TableHead>
                       <TableHead className="text-xs md:text-sm">Qty</TableHead>
-                      <TableHead className="text-xs md:text-sm">Price</TableHead>
+                      <TableHead className="text-xs md:text-sm">Entry Price</TableHead>
+                      <TableHead className="text-xs md:text-sm">Current Price</TableHead>
                       <TableHead className="text-xs md:text-sm hidden sm:table-cell">Value</TableHead>
                       <TableHead className="text-xs md:text-sm">P/L</TableHead>
                       <TableHead className="text-xs md:text-sm">Action</TableHead>
@@ -499,14 +564,26 @@ export default function OptionsPage() {
                   <TableBody>
                     {positions.map((pos) => {
                       try {
-                        // Get current price from strikes
-                        let currentPrice = pos.price
-                        const strike = strikes.find((s) => s.strike === pos.strike)
-                        if (strike) {
-                          currentPrice = pos.type === "CE" ? strike.cePrice : strike.pePrice
+                        // Check if market is open
+                        const marketStatus = isMarketOpen()
+                        
+                        // Get current price from strikes for this position's index
+                        // BUT only if market is open - when market is closed, use entry price
+                        let currentPrice = pos.price // Default to entry price
+                        
+                        if (marketStatus.isOpen) {
+                          // Market is OPEN - fetch live prices from API
+                          const positionStrikes = strikesByIndex[pos.index] || []
+                          const strike = positionStrikes.find((s) => s.strike === pos.strike)
+                          if (strike) {
+                            currentPrice = pos.type === "CE" ? strike.cePrice : strike.pePrice
+                          }
                         }
+                        // If market is CLOSED, currentPrice stays as pos.price (entry price) -> P&L = 0
 
                         // Calculate P&L using proper options calculator
+                        // When market closed: P&L = 0 (since currentPrice = entryPrice)
+                        // When market open: P&L = actual calculation based on live prices
                         const pnl = calculateOptionsPnL(pos.price, currentPrice, pos.action, pos.quantity, pos.lotSize)
                         const pnlPercent = calculateOptionsPnLPercent(pos.price, currentPrice, pos.action)
                         const pnlSign = pnl >= 0
@@ -527,6 +604,7 @@ export default function OptionsPage() {
                             </TableCell>
                             <TableCell className="text-sm">{pos.quantity}</TableCell>
                             <TableCell className="font-mono text-sm">₹{Number(pos.price.toFixed(2)).toLocaleString("en-IN")}</TableCell>
+                            <TableCell className="font-mono text-sm">₹{Number(currentPrice.toFixed(2)).toLocaleString("en-IN")}</TableCell>
                             <TableCell className="font-mono text-sm hidden sm:table-cell">₹{(currentPrice * pos.quantity * pos.lotSize).toLocaleString("en-IN")}</TableCell>
                             <TableCell>
                               <div
@@ -559,7 +637,7 @@ export default function OptionsPage() {
                                             ? lastPrices[pos.id]
                                             : typeof lastPrices[pos.index] === "number"
                                               ? lastPrices[pos.index]
-                                              : basePrice
+                                              : pos.price
                                       const qtyStr = window.prompt("How many lots to buy?", "1")
                                       const qtyBuy = Math.max(0, Number.parseInt(qtyStr || "0") || 0)
                                       if (!qtyBuy) return
@@ -624,7 +702,7 @@ export default function OptionsPage() {
                                             ? lastPrices[pos.id]
                                             : typeof lastPrices[pos.index] === "number"
                                               ? lastPrices[pos.index]
-                                              : basePrice
+                                              : pos.price
                                       const qtyStr = window.prompt("How many lots to sell/close?", "1")
                                       const qtySell = Math.max(0, Number.parseInt(qtyStr || "0") || 0)
                                       if (!qtySell) return

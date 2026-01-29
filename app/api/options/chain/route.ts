@@ -212,9 +212,16 @@ export async function GET(request: NextRequest) {
     const marketOpen = isMarketOpen()
 
     // Fetch current spot price
-    const spotPrice = await getSpotPrice(symbol)
+
+    let spotPrice: number | null = null
+    try {
+      spotPrice = await getSpotPrice(symbol)
+    } catch (err) {
+      console.error(`[OPTIONS_CHAIN] Error fetching spot price for ${symbol}:`, err)
+    }
 
     if (spotPrice === null) {
+      console.error(`[OPTIONS_CHAIN] Spot price is null for symbol: ${symbol}`)
       return NextResponse.json(
         {
           success: false,

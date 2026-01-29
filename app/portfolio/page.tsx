@@ -18,6 +18,7 @@ import {
   getLastTradingPrice,
   calculatePortfolioMetrics 
 } from "@/lib/pnl-calculator"
+import { calculateOptionsPnL, calculateOptionsPnLPercent } from "@/lib/options-calculator"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
@@ -223,54 +224,29 @@ export default function PortfolioPage() {
       }
 
       const symbols = stockHoldings.map((h) => h.symbol)
-      
-      // Check market status
-      const marketStatus = isMarketOpen()
-      let quotes: StockQuote[] = []
-      
-      if (marketStatus.isOpen) {
-        // Market is open - fetch fresh quotes
-        quotes = await fetchMultipleQuotes(symbols)
-      } else {
-        // Market is closed - use last known prices (quotes will be empty)
-        quotes = []
-      }
+      const quotes = await fetchMultipleQuotes(symbols)
 
-      // persist latest quote prices for deterministic fallback keyed by stored holding symbols
-      try {
-        const lastPrices = getLastPrices()
-        stockHoldings.forEach((h) => {
-          const sym = h.symbol
-          const q = quotes.find((qt) => qt && qt.symbol && (
-            qt.symbol === sym || qt.symbol === `${sym}.NS` || (typeof sym === 'string' && sym.endsWith('.NS') && qt.symbol === sym.replace('.NS',''))
-          ))
-          if (q && typeof q.regularMarketPrice === 'number') {
-            lastPrices[sym] = q.regularMarketPrice
-          }
-        })
-        localStorage.setItem(`last_prices_${user.email}`, JSON.stringify(lastPrices))
-      } catch {}
-
-      const holdingsWithQuotes: HoldingWithQuote[] = stockHoldings.map((holding) => {
+      const holdingsWithQuotes = stockHoldings.map((holding: Holding) => {
         const quote = quotes.find((q) => q.symbol === holding.symbol)
         const currentMarketPrice = quote?.regularMarketPrice
         
+        // Check market status first
+        const marketStatus = isMarketOpen()
+        
         // When market is closed, use avgPrice as the reference point for P&L
         // This ensures that newly bought stocks show 0 P&L until market opens and fetches real prices
-        // We DON'T use cached lastTradingPrice because it could be from a previous position
         
         // Determine effective price for P&L calculation:
-        // - If market is OPEN: use current market price
+        // - If market is OPEN and we have a valid price: use current market price
         // - If market is CLOSED: use avgPrice (entry price) to show 0 P&L until market opens
-        let effectivePrice = currentMarketPrice
-        if (!effectivePrice || isNaN(effectivePrice) || effectivePrice <= 0) {
-          // Market is closed or no price available - use entry price
-          effectivePrice = holding.avgPrice
+        let effectivePrice = holding.avgPrice
+        if (marketStatus.isOpen && currentMarketPrice && !isNaN(currentMarketPrice) && currentMarketPrice > 0) {
+          // Market is open and we have a valid current price
+          effectivePrice = currentMarketPrice
         }
         
         // Store the current market price when market is open
         // This will be used as reference for next market close
-        const marketStatus = isMarketOpen()
         if (marketStatus.isOpen && currentMarketPrice && !isNaN(currentMarketPrice) && currentMarketPrice > 0) {
           storeLastTradingPrice(user.email, holding.symbol, currentMarketPrice)
         }
@@ -279,11 +255,12 @@ export default function PortfolioPage() {
         const safeAvgPrice = isNaN(holding.avgPrice) ? 0 : holding.avgPrice
         const safeQuantity = isNaN(holding.quantity) ? 0 : holding.quantity
         
-        // Portfolio value: use current market price if available, otherwise use entry price
-        const portfolioPrice = (currentMarketPrice && !isNaN(currentMarketPrice) && currentMarketPrice > 0) ? currentMarketPrice : holding.avgPrice
+        // Portfolio value: use effective price (which respects market status)
+        const portfolioPrice = safeEffectivePrice
         const currentValue = portfolioPrice * safeQuantity
         
         // P&L = (Effective Price - Avg Price) * Quantity
+        // When market is closed, effectivePrice = avgPrice, so P&L = 0
         const pnl = calculatePnL(safeAvgPrice, safeEffectivePrice, safeQuantity)
         const pnlPercent = calculatePnLPercent(safeAvgPrice, safeEffectivePrice)
 
@@ -793,7 +770,7 @@ export default function PortfolioPage() {
                                     ? lastPrices[strikeKey] 
                                     : pos.price)
                     
-                    const pnl = calculatePnL(pos.price, current, pos.quantity * pos.lotSize)
+                    const pnl = calculateOptionsPnL(pos.price, current, pos.action, pos.quantity, pos.lotSize)
                     const investedPortion = pos.price * pos.quantity * pos.lotSize
                     const credit = investedPortion + pnl
                     totalCredit += credit
@@ -868,8 +845,19 @@ export default function PortfolioPage() {
                         currentPrice = pos.price
                       }
                       
-                      // Calculate P&L using the calculator
-                      const pnl = calculatePnL(pos.price, currentPrice, pos.quantity * pos.lotSize)
+                      // Calculate P&L using the options calculator with action and lotSize
+                      const pnl = calculateOptionsPnL(
+                        pos.price,
+                        currentPrice,
+                        pos.action,
+                        pos.quantity,
+                        pos.lotSize
+                      )
+                      const pnlPercent = calculateOptionsPnLPercent(
+                        pos.price,
+                        currentPrice,
+                        pos.action
+                      )
 
                       return (
                         <div key={pos.id} className="flex items-center justify-between p-2 md:p-3 rounded-md md:rounded-lg bg-secondary/50">
@@ -879,7 +867,7 @@ export default function PortfolioPage() {
                           </div>
                               <div className="text-right">
                                 <div className={`font-mono font-semibold text-sm md:text-base ${pnl >= 0 ? 'text-primary' : 'text-destructive'}`}>{pnl >= 0 ? '+' : '-'}₹{Number(Math.abs(pnl).toFixed(2)).toLocaleString("en-IN")}</div>
-                                <div className="text-[10px] md:text-xs text-muted-foreground">Entry: ₹{Number(pos.price.toFixed(2)).toLocaleString("en-IN")} • Now: ₹{Number(currentPrice.toFixed(2)).toLocaleString("en-IN")}</div>
+                                <div className="text-[10px] md:text-xs text-muted-foreground">Entry: ₹{Number(pos.price.toFixed(2)).toLocaleString("en-IN")} • Now: ₹{Number(currentPrice.toFixed(2)).toLocaleString("en-IN")} • {pnlPercent >= 0 ? '+' : '-'}{Math.abs(pnlPercent).toFixed(2)}%</div>
                               </div>
                               <div className="ml-2 md:ml-4 flex items-center gap-1 md:gap-2">
                                 <Button

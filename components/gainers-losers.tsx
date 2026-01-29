@@ -15,16 +15,16 @@ export function GainersLosers() {
   const [gainers, setGainers] = useState<StockQuote[]>([])
   const [losers, setLosers] = useState<StockQuote[]>([])
   const [loading, setLoading] = useState(true)
-  const TOP_COUNT = 10 // Only show top 10 for perf
+  const TOP_COUNT = 100 // Show top 100 gainers/losers
 
   useEffect(() => {
     const fetchGainersLosersData = async () => {
       try {
         const { INDIAN_STOCKS } = await import("@/lib/stocks-data")
         const { fetchMultipleQuotes } = await import("@/lib/yahoo-finance")
-        // Fetch only 60 stocks for ultra-fast loading
-        const allSymbols = INDIAN_STOCKS.slice(0, 60).map(stock => stock.symbol)
-        const cacheKey = `gainers_losers:${allSymbols.slice(0, 10).join(',')}`
+        // Fetch all stocks to show all gainers
+        const allSymbols = INDIAN_STOCKS.map(stock => stock.symbol)
+        const cacheKey = `gainers_losers:${allSymbols.length}:${allSymbols.slice(0, 10).join(',')}`
         
         // Use cache with deduplication for ultra-fast loading
         const quotes = await quoteCache.withDedup(
@@ -34,17 +34,17 @@ export function GainersLosers() {
         )
         
         if (!loading) setLoading(true) // Only set if not already loading
-        // Only show stocks with +3% or more in Top Gainers (faster to find)
+        // Show only strong gainers (>= 5%)
         const gainersSorted = quotes
-          .filter(q => typeof q.regularMarketChangePercent === 'number' && (q.regularMarketChangePercent || 0) >= 3)
+          .filter(q => typeof q.regularMarketChangePercent === 'number' && (q.regularMarketChangePercent || 0) >= 5)
           .sort((a, b) => (b.regularMarketChangePercent || 0) - (a.regularMarketChangePercent || 0))
-          .slice(0, 10)
+          .slice(0, TOP_COUNT)
         
-        // Show all stocks with any loss
+        // Show losing stocks between -5% and -20% (strong losers)
         let losersSorted = quotes
-          .filter(q => typeof q.regularMarketChangePercent === 'number' && (q.regularMarketChangePercent || 0) < 0)
+          .filter(q => typeof q.regularMarketChangePercent === 'number' && (q.regularMarketChangePercent || 0) <= -5 && (q.regularMarketChangePercent || 0) >= -20)
           .sort((a, b) => (a.regularMarketChangePercent || 0) - (b.regularMarketChangePercent || 0))
-          .slice(0, 10)
+          .slice(0, TOP_COUNT)
         
         setGainers(gainersSorted)
         setLosers(losersSorted)
@@ -74,7 +74,7 @@ export function GainersLosers() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-1 md:space-y-2">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((j) => (
+            {Array.from({ length: TOP_COUNT }).map((_, j) => (
               <Skeleton key={j} className="h-6 md:h-8 w-full" />
             ))}
           </CardContent>
@@ -89,7 +89,7 @@ export function GainersLosers() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-1 md:space-y-2">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((j) => (
+            {Array.from({ length: TOP_COUNT }).map((_, j) => (
               <Skeleton key={j} className="h-6 md:h-8 w-full" />
             ))}
           </CardContent>
@@ -105,7 +105,7 @@ export function GainersLosers() {
         <CardHeader className="pb-0.5 md:pb-2">
           <CardTitle className="text-xs md:text-base flex items-center gap-1 md:gap-2">
             <TrendingUp className="h-2.5 w-2.5 md:h-4 md:w-4 text-primary" />
-            Top Gainers
+            Top Gainers (≥5%)
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-0.5 md:space-y-2 max-h-48 md:max-h-80 overflow-y-auto">
@@ -156,7 +156,7 @@ export function GainersLosers() {
         <CardHeader className="pb-0.5 md:pb-2">
           <CardTitle className="text-xs md:text-base flex items-center gap-1 md:gap-2">
             <TrendingDown className="h-2.5 w-2.5 md:h-4 md:w-4 text-destructive" />
-            Top Losers
+            Top Losers (-5% to -20%)
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-0.5 md:space-y-2 max-h-48 md:max-h-80 overflow-y-auto">

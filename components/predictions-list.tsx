@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { useBalance } from "@/hooks/use-balance"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
+import { formatCurrency } from "@/lib/market-utils"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
@@ -123,7 +124,7 @@ export function PredictionsList() {
   const [showTradeFullscreen, setShowTradeFullscreen] = useState(false)
   const [tradeInitialTab, setTradeInitialTab] = useState<'buy' | 'sell' | null>(null)
   const [tradePopup, setTradePopup] = useState<{ visible: boolean; message?: string }>({ visible: false })
-  const [quantityDialog, setQuantityDialog] = useState<{ visible: boolean; stock: StockPrediction | null; type: 'buy' | 'sell' | null; quantity: number }>({ visible: false, stock: null, type: null, quantity: 1 })
+  const [quantityDialog, setQuantityDialog] = useState<{ visible: boolean; stock: StockPrediction | null; type: 'buy' | 'sell' | null; quantity: string }>({ visible: false, stock: null, type: null, quantity: '1' })
   const router = useRouter()
   
 
@@ -134,14 +135,14 @@ export function PredictionsList() {
         const { quoteCache } = await import("@/lib/cache-utils")
         const { fetchMultipleQuotes } = await import("@/lib/yahoo-finance")
         
-        // OPTIMIZATION: Fetch only 50 stocks initially for instant load
-        const topStocks = INDIAN_STOCKS.slice(0, 50).map(stock => stock.symbol)
-        const cacheKey = `predictions:initial`
+        // Fetch all stocks and show predictions for strong movers (>= 5%)
+        const allSymbols = INDIAN_STOCKS.map(stock => stock.symbol)
+        const cacheKey = `predictions:5percent_all`
         
         // Use cache with request deduplication for ultra-fast response
         const quotes = await quoteCache.withDedup(
           cacheKey,
-          () => fetchMultipleQuotes(topStocks),
+          () => fetchMultipleQuotes(allSymbols),
           45000 // Cache for 45 seconds
         )
 
@@ -158,9 +159,10 @@ export function PredictionsList() {
           sector: "Various",
         }))
 
+        // Keep only stocks with >=5% change and limit to 100 results
         const strongProfitablePredictions = mockPredictions.filter(stock => 
-          stock.changePercent >= 2 // Lower threshold for faster results
-        ).slice(0, 50) // Only first 50 for instant display
+          stock.changePercent >= 5
+        ).slice(0, 100) // Show up to 100 strong gainers as predictions
 
         const sortedPredictions = strongProfitablePredictions.sort((a, b) => {
           return b.changePercent - a.changePercent
@@ -208,7 +210,7 @@ export function PredictionsList() {
               changePercent: isNaN(q.regularMarketChangePercent) ? p.changePercent : q.regularMarketChangePercent ?? p.changePercent,
             }
             return updated
-          }).filter((p) => p.changePercent >= 3) // Remove stocks that fell below 3%
+            }).filter((p) => p.changePercent >= 5) // Remove stocks that fell below 5%
         )
 
         // update selected stock price if visible
@@ -290,7 +292,10 @@ export function PredictionsList() {
       toast({ title: 'Login required', description: 'Please sign in to place trades', variant: 'destructive' })
       return
     }
-    
+    if (qty < 1) {
+      toast({ title: 'Enter Quantity', description: 'Please enter a valid quantity to buy', variant: 'destructive' })
+      return
+    }
     const totalCost = qty * (isNaN(stock.price) ? 0 : stock.price || 0)
     if (totalCost > user.balance) {
       // insufficient balance — show toast and dispatch event for UI
@@ -327,7 +332,7 @@ export function PredictionsList() {
       try {
         window.dispatchEvent(new CustomEvent("tradeCompleted", { detail: { symbol: stock.symbol, type: "buy", quantity: qty } }))
       } catch {}
-      toast({ title: 'Bought', description: `Bought ${qty} ${stock.symbol.split('.')[0]} for ₹${(totalCost).toFixed(2)}` })
+      toast({ title: 'Bought', description: `Bought ${qty} ${stock.symbol.split('.')[0]} for ${formatCurrency(totalCost)}` })
     } catch (e) {
       console.error("quickBuy error", e)
     }
@@ -338,7 +343,10 @@ export function PredictionsList() {
       toast({ title: 'Login required', description: 'Please sign in to sell holdings', variant: 'destructive' })
       return
     }
-    
+    if (qty < 1) {
+      toast({ title: 'Enter Quantity', description: 'Please enter a valid quantity to sell', variant: 'destructive' })
+      return
+    }
     try {
       const storageKey = user ? `holdings_${user.email}` : "holdings_guest"
       const raw = localStorage.getItem(storageKey) || "[]"
@@ -369,7 +377,7 @@ export function PredictionsList() {
       try {
         window.dispatchEvent(new CustomEvent("tradeCompleted", { detail: { symbol: stock.symbol, type: "sell", quantity: qty } }))
       } catch {}
-      toast({ title: 'Sold', description: `Sold ${qty} ${stock.symbol.split('.')[0]} for ₹${(totalValue).toFixed(2)}` })
+      toast({ title: 'Sold', description: `Sold ${qty} ${stock.symbol.split('.')[0]} for ${formatCurrency(totalValue)}` })
     } catch (e) {
       console.error("quickSell error", e)
     }
@@ -399,22 +407,22 @@ export function PredictionsList() {
               <div>
                 <label className="block text-sm font-medium mb-2">Quantity</label>
                 <input
-                  type="number"
-                  min="1"
+                  type="text"
                   value={quantityDialog.quantity}
-                  onChange={(e) => setQuantityDialog(prev => ({ ...prev, quantity: Math.max(1, parseInt(e.target.value) || 1) }))}
+                  onChange={(e) => setQuantityDialog(prev => ({ ...prev, quantity: e.target.value.replace(/\D/g, '') }))}
                   className="w-full px-3 py-2 border border-border rounded-md bg-background"
                 />
+
               </div>
 
               <div className="text-sm space-y-1">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Price per share</span>
-                  <span className="font-mono">₹{quantityDialog.stock.price.toFixed(2)}</span>
+                  <span className="font-mono">{formatCurrency(quantityDialog.stock.price)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total {quantityDialog.type === 'buy' ? 'Cost' : 'Value'}</span>
-                  <span className="font-mono font-bold">₹{(quantityDialog.stock.price * quantityDialog.quantity).toFixed(2)}</span>
+                  <span className="font-mono font-bold">{formatCurrency(quantityDialog.stock.price * (parseInt(quantityDialog.quantity || '0') || 0))}</span>
                 </div>
               </div>
 
@@ -422,15 +430,15 @@ export function PredictionsList() {
                 <Button 
                   onClick={() => {
                     if (quantityDialog.type === 'buy') {
-                      quickBuy(quantityDialog.stock!, quantityDialog.quantity)
+                      quickBuy(quantityDialog.stock!, parseInt(quantityDialog.quantity || '0') || 0)
                     } else {
-                      quickSell(quantityDialog.stock!, quantityDialog.quantity)
+                      quickSell(quantityDialog.stock!, parseInt(quantityDialog.quantity || '0') || 0)
                     }
-                    setQuantityDialog({ visible: false, stock: null, type: null, quantity: 1 })
+                    setQuantityDialog({ visible: false, stock: null, type: null, quantity: '1' })
                   }}
                   className="flex-1"
                 >
-                  {quantityDialog.type === 'buy' ? 'Buy' : 'Sell'} {quantityDialog.quantity} Shares
+                  {quantityDialog.type === 'buy' ? 'Buy' : 'Sell'} {parseInt(quantityDialog.quantity || '0') || 0} Shares
                 </Button>
                 <Button 
                   variant="outline" 

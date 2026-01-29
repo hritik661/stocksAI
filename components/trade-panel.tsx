@@ -43,13 +43,15 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
   const { user, updateBalance } = useAuth()
   const { deductBalance, addBalance } = useBalance()
   const { toast } = useToast()
-  const [quantity, setQuantity] = useState(1)
+  // Allow empty input while typing by using string state; convert to number when performing actions
+  const [quantity, setQuantity] = useState<string>('1')
   const [tradeType, setTradeType] = useState<"equity" | "options">("equity")
   const [optionType, setOptionType] = useState<"CE" | "PE">("CE")
   const [selectedStrike, setSelectedStrike] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState<"buy" | "sell">(initialTab || "buy")
 
-  const totalCost = quantity * stock.regularMarketPrice
+  const numQuantity = Math.max(0, parseInt(quantity || '0') || 0)
+  const totalCost = numQuantity * stock.regularMarketPrice
 
   // generate a small synthetic chart so trade panel shows same candlestick visuals
   const generateMiniChart = (base: number, points = 60) => {
@@ -79,11 +81,16 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
 
   const handleBuy = async () => {
     if (!user) return
-
-    if (totalCost > user.balance) {
+    const qty = Math.max(0, parseInt(quantity || '0') || 0)
+    if (qty < 1) {
+      toast({ title: 'Enter Quantity', description: 'Please enter a valid quantity to buy', variant: 'destructive' })
+      return
+    }
+    const localTotal = qty * stock.regularMarketPrice
+    if (localTotal > user.balance) {
       toast({
         title: "Insufficient Balance",
-        description: `You need ${formatCurrency(totalCost - user.balance)} more to complete this purchase.`,
+        description: `You need ${formatCurrency(localTotal - user.balance)} more to complete this purchase.`,
         variant: "destructive",
       })
       return
@@ -93,14 +100,14 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
     const existingIndex = holdings.findIndex((h: Holding) => h.symbol === stock.symbol)
     if (existingIndex >= 0) {
       const existing = holdings[existingIndex]
-      const newQuantity = existing.quantity + quantity
-      const newAvgPrice = (existing.avgPrice * existing.quantity + stock.regularMarketPrice * quantity) / newQuantity
+      const newQuantity = existing.quantity + qty
+      const newAvgPrice = (existing.avgPrice * existing.quantity + stock.regularMarketPrice * qty) / newQuantity
       holdings[existingIndex] = { ...existing, quantity: newQuantity, avgPrice: newAvgPrice }
     } else {
       holdings.push({
         symbol: stock.symbol,
         name: stock.shortName,
-        quantity,
+        quantity: qty,
         avgPrice: stock.regularMarketPrice,
       })
     }
@@ -119,7 +126,7 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
     }
 
     // Deduct balance using API
-    const balanceResult = await deductBalance(totalCost, "BUY", stock.symbol, quantity, stock.regularMarketPrice)
+    const balanceResult = await deductBalance(localTotal, "BUY", stock.symbol, qty, stock.regularMarketPrice)
     if (!balanceResult.success) {
       toast({
         title: "Transaction Failed",
@@ -135,9 +142,9 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
       symbol: stock.symbol,
       name: stock.shortName,
       type: "buy",
-      quantity,
+      quantity: qty,
       price: stock.regularMarketPrice,
-      total: totalCost,
+      total: localTotal,
       timestamp: Date.now(),
     }
     transactions.push(transaction)
@@ -145,23 +152,28 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
 
     toast({
       title: "Order Placed Successfully",
-      description: `Bought ${quantity} shares of ${stock.symbol.replace(".NS", "")} at ${formatCurrency(stock.regularMarketPrice)}`,
+      description: `Bought ${qty} shares of ${stock.symbol.replace(".NS", "")} at ${formatCurrency(stock.regularMarketPrice)}`,
     })
 
-    setQuantity(1)
+    setQuantity('1')
 
     // notify other UI listeners that a trade completed (used by Predictions popup)
     try {
       window.dispatchEvent(
-        new CustomEvent("tradeCompleted", { detail: { symbol: stock.symbol, type: "buy", quantity } }),
+        new CustomEvent("tradeCompleted", { detail: { symbol: stock.symbol, type: "buy", quantity: qty } }),
       )
     } catch (e) {}
   }
 
   const handleSell = async () => {
     if (!user) return
+    const qty = Math.max(0, parseInt(quantity || '0') || 0)
+    if (qty < 1) {
+      toast({ title: 'Enter Quantity', description: 'Please enter a valid quantity to sell', variant: 'destructive' })
+      return
+    }
 
-    if (!currentHolding || currentHolding.quantity < quantity) {
+    if (!currentHolding || currentHolding.quantity < qty) {
       toast({
         title: "Insufficient Shares",
         description: `You only have ${currentHolding?.quantity || 0} shares to sell.`,
@@ -173,7 +185,7 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
     // Update holdings
     const existingIndex = holdings.findIndex((h: Holding) => h.symbol === stock.symbol)
     if (existingIndex >= 0) {
-      const newQuantity = holdings[existingIndex].quantity - quantity
+      const newQuantity = holdings[existingIndex].quantity - qty
       const isSellingAll = newQuantity <= 0
 
       if (isSellingAll) {
@@ -200,7 +212,7 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
 
         if (optionsToSell.length > 0) {
           // Add back the option value to balance using API
-          const optionResult = await addBalance(totalOptionsValue, "SELL", stock.symbol, quantity, stock.regularMarketPrice)
+          const optionResult = await addBalance(totalOptionsValue, "SELL", stock.symbol, qty, stock.regularMarketPrice)
           if (!optionResult.success) {
             toast({
               title: "Transaction Failed",
@@ -229,7 +241,7 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
     }
 
     // Add balance using API
-    const balanceResult = await addBalance(totalCost, "SELL", stock.symbol, quantity, stock.regularMarketPrice)
+    const balanceResult = await addBalance(totalCost, "SELL", stock.symbol, qty, stock.regularMarketPrice)
     if (!balanceResult.success) {
       toast({
         title: "Transaction Failed",
@@ -245,7 +257,7 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
       symbol: stock.symbol,
       name: stock.shortName,
       type: "sell",
-      quantity,
+      quantity: qty,
       price: stock.regularMarketPrice,
       total: totalCost,
       timestamp: Date.now(),
@@ -255,15 +267,15 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
 
     toast({
       title: "Order Placed Successfully",
-      description: `Sold ${quantity} shares of ${stock.symbol.replace(".NS", "")} at ${formatCurrency(stock.regularMarketPrice)}`,
+      description: `Sold ${qty} shares of ${stock.symbol.replace(".NS", "")} at ${formatCurrency(stock.regularMarketPrice)}`,
     })
 
-    setQuantity(1)
+    setQuantity('1')
 
     // notify other UI listeners that a trade completed (used by Predictions popup)
     try {
       window.dispatchEvent(
-        new CustomEvent("tradeCompleted", { detail: { symbol: stock.symbol, type: "sell", quantity } }),
+        new CustomEvent("tradeCompleted", { detail: { symbol: stock.symbol, type: "sell", quantity: qty } }),
       )
     } catch (e) {}
   }
@@ -461,14 +473,12 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
 
             <TabsContent value="buy" className="space-y-4 mt-4">
               <div className="space-y-2">
-                <Label htmlFor="buy-quantity">Quantity</Label>
                 <Input
                   id="buy-quantity"
-                  type="number"
-                  min={1}
+                  type="text"
+                  placeholder="Enter quantity"
                   value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, Number.parseInt(e.target.value) || 1))}
-                  className="bg-secondary"
+                  onChange={(e) => setQuantity(e.target.value.replace(/\D/g, ''))}
                 />
               </div>
 
@@ -487,24 +497,23 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
                 </div>
               </div>
 
-              <Button className="btn-buy w-full gap-2" onClick={handleBuy} disabled={totalCost > user.balance}>
+              <Button className="btn-buy w-full gap-2" onClick={handleBuy} disabled={numQuantity < 1 || totalCost > user.balance}>
                 <TrendingUp className="h-5 w-5" />
-                Buy {quantity} {quantity === 1 ? "Share" : "Shares"}
+                Buy {numQuantity} {numQuantity === 1 ? "Share" : "Shares"}
               </Button>
             </TabsContent>
 
             <TabsContent value="sell" className="space-y-4 mt-4">
               <div className="space-y-2">
-                <Label htmlFor="sell-quantity">Quantity</Label>
                 <Input
                   id="sell-quantity"
-                  type="number"
-                  min={1}
-                  max={currentHolding?.quantity || 0}
+                  type="text"
+                  placeholder="Enter quantity"
                   value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, Number.parseInt(e.target.value) || 1))}
+                  onChange={(e) => setQuantity(e.target.value.replace(/\D/g, ''))}
                   className="bg-secondary"
                 />
+
               </div>
 
               <div className="space-y-2 text-sm">
@@ -525,10 +534,10 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
               <Button
                 className="btn-sell w-full gap-2"
                 onClick={handleSell}
-                disabled={!currentHolding || currentHolding.quantity < quantity}
+                disabled={!currentHolding || currentHolding.quantity < numQuantity || numQuantity < 1}
               >
                 <TrendingDown className="h-5 w-5" />
-                Sell {quantity} {quantity === 1 ? "Share" : "Shares"}
+                Sell {numQuantity} {numQuantity === 1 ? "Share" : "Shares"}
               </Button>
             </TabsContent>
           </Tabs>

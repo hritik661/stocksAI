@@ -58,10 +58,24 @@ export async function fetchStockQuote(symbol: string): Promise<StockQuote | null
 
 export async function fetchMultipleQuotes(symbols: string[]): Promise<StockQuote[]> {
   try {
-    const response = await fetch(`/api/stock/quotes?symbols=${encodeURIComponent(symbols.join(","))}`)
-    if (!response.ok) throw new Error("Failed to fetch")
-    const data = await response.json()
-    return data
+    // Batch symbols into groups of up to 100 to avoid server-side limits
+    const chunkSize = 100
+    const chunks: string[][] = []
+    for (let i = 0; i < symbols.length; i += chunkSize) {
+      chunks.push(symbols.slice(i, i + chunkSize))
+    }
+
+    const results = await Promise.all(
+      chunks.map(async (chunk) => {
+        const response = await fetch(`/api/stock/quotes?symbols=${encodeURIComponent(chunk.join(","))}`)
+        if (!response.ok) return []
+        const data = await response.json()
+        return data as StockQuote[]
+      })
+    )
+
+    // Flatten and return
+    return results.flat()
   } catch {
     return []
   }

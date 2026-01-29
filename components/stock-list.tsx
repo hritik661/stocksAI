@@ -14,18 +14,24 @@ export function StockList() {
   // Show more/less logic
   const [stocks, setStocks] = useState<StockQuote[]>([])
   const [showAllStocks, setShowAllStocks] = useState(false)
-  const [showAllTraded, setShowAllTraded] = useState(false)
+
   const [visibleCount, setVisibleCount] = useState(8) // Show 8 by default for desktop, 4 for mobile
+  // Fixed number of Most Traded to show (top 20 by volume)
+  const MOST_TRADED_COUNT = 20
+  const [showAllTraded, setShowAllTraded] = useState(false)
   const [chartDataMap, setChartDataMap] = useState<Record<string, ChartData[]>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedSector, setSelectedSector] = useState("All")
 
-    // Set visibleCount based on screen size after mount
+    // Set visibleCount and mostTradedVisibleCount based on screen size after mount
     // Handle resize and showAll toggle (does NOT reference stocks)
     useEffect(() => {
       const updateVisibleCount = () => {
-        setVisibleCount(window.innerWidth < 768 ? 4 : 8);
+        const mobile = window.innerWidth < 768
+        setVisibleCount(mobile ? 4 : 8);
+        // reset showAllTraded when resizing to avoid showing full list unexpectedly
+        setShowAllTraded(false)
       };
       updateVisibleCount();
       window.addEventListener('resize', updateVisibleCount);
@@ -41,8 +47,8 @@ export function StockList() {
         if (selectedSector !== "All") {
           filteredStocks = filteredStocks.filter((s) => s.sector === selectedSector)
         }
-        // If "All", fetch top 100 stocks; otherwise fetch top 12
-        const limit = selectedSector === "All" ? Math.min(100, filteredStocks.length) : 12
+        // If "All", fetch top 250 stocks; otherwise fetch top 12
+        const limit = selectedSector === "All" ? Math.min(250, filteredStocks.length) : 12
         const symbols = filteredStocks.slice(0, limit).map((s) => s.symbol)
         let data = []
         try {
@@ -147,7 +153,7 @@ export function StockList() {
 
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-1 md:gap-2">
-          {[...Array(window.innerWidth < 768 ? 4 : 8)].map((_, i) => (
+          {[...Array(visibleCount)].map((_, i) => (
             <Skeleton key={i} className="h-8 md:h-10 rounded-lg p-0.5" />
           ))}
         </div>
@@ -164,61 +170,60 @@ export function StockList() {
         </div>
       ) : (
         <>
-        {/* All Stocks - show more/less, no logo, consistent box size, no duplicates */}
-        <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8`}>
-          {Array.from(new Map(stocks.map(s => [s.symbol, s])).values())
-            .slice(0, showAllStocks ? stocks.length : visibleCount)
-            .map((stock) => (
-              <StockCard
-                key={stock.symbol}
-                stock={stock}
-                chartData={chartDataMap[stock.symbol]?.map((d) => ({ timestamp: d.timestamp, close: d.close }))}
-                hideLogo={true}
-                largeCard={true}
-              />
-            ))}
-        </div>
-        {stocks.length > visibleCount && (
-          <div className="flex justify-center mt-4">
-            <button
-              className="px-3 py-1.5 text-xs md:px-4 md:py-2 md:text-sm rounded bg-black text-white hover:bg-gray-900 transition font-semibold"
-              onClick={() => setShowAllStocks((prev) => !prev)}
-              style={{backgroundColor: '#111'}}
-            >
-              {showAllStocks ? 'Show Less' : 'Show More'}
-            </button>
-          </div>
-        )}
-        {/* Most Traded - normal style, no box, show more/less, no logo, consistent box size, no duplicate Show More, basic CSS */}
-        <div className="mt-8">
-          <h2 className="text-lg md:text-xl font-bold mb-2 text-yellow-600 tracking-wide">Most Traded Stocks</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 bg-black/10 p-2 md:p-4 rounded-xl border border-yellow-700">
-            {Array.from(new Map(stocks.sort((a, b) => (b.regularMarketVolume || 0) - (a.regularMarketVolume || 0)).map(s => [s.symbol, s])).values())
-              .slice(0, showAllTraded ? 10 : 4)
+          {/* All Stocks - show more/less, no logo, consistent box size, no duplicates */}
+          <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8`}>
+            {Array.from(new Map(stocks.map(s => [s.symbol, s])).values())
+              .slice(0, showAllStocks ? stocks.length : visibleCount)
               .map((stock) => (
-                  <StockCard
-                    key={stock.symbol}
-                    stock={stock}
-                    chartData={chartDataMap[stock.symbol]?.map((d) => ({ timestamp: d.timestamp, close: d.close }))}
-                    hideLogo={true}
-                    largeCard={true}
-                    noBox={true}
-                  />
+                <StockCard
+                  key={stock.symbol}
+                  stock={stock}
+                  chartData={chartDataMap[stock.symbol]?.map((d) => ({ timestamp: d.timestamp, close: d.close }))}
+                  hideLogo={true}
+                  largeCard={true}
+                />
               ))}
           </div>
-          {stocks.length > 4 && (
+          {stocks.length > visibleCount && (
             <div className="flex justify-center mt-4">
               <button
                 className="px-3 py-1.5 text-xs md:px-4 md:py-2 md:text-sm rounded bg-black text-white hover:bg-gray-900 transition font-semibold"
-                onClick={() => setShowAllTraded((prev) => !prev)}
+                onClick={() => setShowAllStocks((prev) => !prev)}
                 style={{backgroundColor: '#111'}}
               >
-                {showAllTraded ? 'Show Less' : 'Show More'}
+                {showAllStocks ? 'Show Less' : 'Show More'}
               </button>
             </div>
           )}
-        </div>
-          {/* Show More/Less Buttons (removed buggy showAll, use showAllStocks) */}
+          {/* Most Traded - normal style, no box, show more/less, no logo, consistent box size, no duplicate Show More, basic CSS */}
+          <div className="mt-8">
+            <h2 className="text-lg md:text-xl font-bold mb-2 text-yellow-600 tracking-wide">Most Traded Stocks (Top 20)</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 bg-black/10 p-2 md:p-4 rounded-xl border border-yellow-700">
+              {Array.from(new Map(stocks.sort((a, b) => (b.regularMarketVolume || 0) - (a.regularMarketVolume || 0)).map(s => [s.symbol, s])).values())
+                .slice(0, showAllTraded ? MOST_TRADED_COUNT : visibleCount)
+                .map((stock) => (
+                    <StockCard
+                      key={stock.symbol}
+                      stock={stock}
+                      chartData={chartDataMap[stock.symbol]?.map((d) => ({ timestamp: d.timestamp, close: d.close }))}
+                      hideLogo={true}
+                      largeCard={true}
+                      noBox={true}
+                    />
+                ))}
+            </div>
+            {MOST_TRADED_COUNT > visibleCount && (
+              <div className="flex justify-center mt-4">
+                <button
+                  className="px-3 py-1.5 text-xs md:px-4 md:py-2 md:text-sm rounded bg-black text-white hover:bg-gray-900 transition font-semibold"
+                  onClick={() => setShowAllTraded((prev) => !prev)}
+                  style={{backgroundColor: '#111'}}
+                >
+                  {showAllTraded ? 'Show Less' : 'Show More'}
+                </button>
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>

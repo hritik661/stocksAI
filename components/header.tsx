@@ -84,7 +84,7 @@ export function Header({ isLandingPage = false }: { isLandingPage?: boolean }) {
           {/* Search Bar - moved right after logo */}
           {!isLandingPage && user && (
             <div className="flex-1 max-w-lg">
-              <div className="relative flex items-center gap-2 group mb-2 md:mb-0">
+              <div className="relative flex items-center gap-2 group">
                 <div className="relative flex-1">
                   <Search className="absolute left-2 top-1/2 h-3 w-3 md:h-4 md:w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
                   <Input
@@ -123,29 +123,37 @@ export function Header({ isLandingPage = false }: { isLandingPage?: boolean }) {
                     </div>
                   )}
                 </div>
+                
+                {/* Mobile balance - inline with search */}
+                {user && (
+                  <div className="md:hidden flex items-center px-2 py-1.5 rounded-lg bg-primary/10 border border-primary/30">
+                    <Wallet className="h-3 w-3 text-primary" />
+                    <span className="text-[10px] font-semibold font-mono text-primary ml-1">{formatCurrency(user.balance)}</span>
+                  </div>
+                )}
               </div>
               
               {/* Mobile Navigation Buttons - under search */}
-              <div className="flex items-center gap-0.5 md:hidden justify-center flex-wrap w-full">
+              <div className="flex items-center gap-0.5 md:hidden justify-center flex-wrap w-full mt-1">
                 <Link href="/portfolio" className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full h-10 text-xs border border-blue-400/50 bg-blue-500/10 text-blue-600 font-semibold hover:bg-blue-500/20">
+                  <Button variant="outline" size="sm" className="w-full h-9 text-xs border border-blue-400/50 bg-blue-500/10 text-blue-600 font-semibold hover:bg-blue-500/20">
                     Portfolio
                   </Button>
                 </Link>
                 <Link href="/options" className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full h-10 text-xs border border-cyan-400/50 bg-cyan-500/10 text-cyan-600 font-semibold hover:bg-cyan-500/20">
+                  <Button variant="outline" size="sm" className="w-full h-9 text-xs border border-cyan-400/50 bg-cyan-500/10 text-cyan-600 font-semibold hover:bg-cyan-500/20">
                     Option
                   </Button>
                 </Link>
                 <Link href="/about" className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full h-10 text-xs border border-green-400/50 bg-green-500/10 text-green-600 font-semibold hover:bg-green-500/20">
+                  <Button variant="outline" size="sm" className="w-full h-9 text-xs border border-green-400/50 bg-green-500/10 text-green-600 font-semibold hover:bg-green-500/20">
                     About
                   </Button>
                 </Link>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1 relative overflow-hidden group h-10 text-xs border bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-blue-600/20 border-purple-400/50 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 rounded-md"
+                  className="flex-1 relative overflow-hidden group h-9 text-xs border bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-blue-600/20 border-purple-400/50 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 rounded-md"
                   onClick={() => router.push('/predictions')}
                 >
                   <div className="flex items-center justify-center gap-1">

@@ -109,7 +109,8 @@ function extractStocksFromHTML(html: string, count: number) {
 async function getFallbackIndianStocks(type: string, count: number) {
   // Fallback: Get Indian stocks and sort by change
   const { INDIAN_STOCKS } = await import("@/lib/stocks-data")
-  const symbols = INDIAN_STOCKS.slice(0, Math.max(50, count * 2)).map(s => s.symbol)
+  // Consider all Indian stocks so newly added symbols are included
+  const symbols = INDIAN_STOCKS.map(s => s.symbol)
 
   try {
     const { fetchMultipleQuotes } = await import("@/lib/yahoo-finance")
