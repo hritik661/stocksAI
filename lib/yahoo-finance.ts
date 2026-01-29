@@ -116,3 +116,16 @@ export async function fetchGainersLosers(type: "gainers" | "losers", count: numb
     return []
   }
 }
+
+export async function fetchFiftyTwoWeekData(type: "all" | "near-high" | "near-low" | "volatile" = "all") {
+  try {
+    const response = await fetch(`/api/stock/52-week-data?type=${type}`)
+    if (!response.ok) throw new Error("Failed to fetch 52-week data")
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error("Error fetching 52-week data:", error)
+    return null
+  }
+}
+

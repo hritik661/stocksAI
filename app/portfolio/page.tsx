@@ -700,7 +700,6 @@ export default function PortfolioPage() {
                                   if (item.quantity <= 0) return
 
                                   const price = holding.quote?.regularMarketPrice || holding.avgPrice
-                                  const credit = price
 
                                   const qtyStr = window.prompt('How many shares to sell?', '1')
                                   const qtySell = Math.max(0, Number.parseInt(qtyStr || '0') || 0)
@@ -711,14 +710,16 @@ export default function PortfolioPage() {
                                   localStorage.setItem(storageKey, JSON.stringify(arr))
                                   
                                   // Add balance using API
-                                  const balanceResult = await addBalance(credit * qtySell, "SELL", holding.symbol, qtySell, price)
+                                  // Credit = current market price × quantity
+                                  const totalCredit = price * qtySell
+                                  const balanceResult = await addBalance(totalCredit, "SELL", holding.symbol, qtySell, price)
                                   if (!balanceResult.success) {
                                     toast({ title: 'Transaction Failed', description: balanceResult.error, variant: 'destructive' })
                                     return
                                   }
                                   
                                   try { setLastPrice(holding.symbol, price) } catch {}
-                                  toast({ title: 'Sold', description: `Sold ${qtySell} shares of ${holding.symbol} for ${formatCurrency(credit * qtySell)}` })
+                                  toast({ title: 'Sold', description: `Sold ${qtySell} shares of ${holding.symbol} for ${formatCurrency(totalCredit)}` })
                                 }
                               } catch (err) {
                                 console.error(err)
@@ -770,9 +771,8 @@ export default function PortfolioPage() {
                                     ? lastPrices[strikeKey] 
                                     : pos.price)
                     
-                    const pnl = calculateOptionsPnL(pos.price, current, pos.action, pos.quantity, pos.lotSize)
-                    const investedPortion = pos.price * pos.quantity * pos.lotSize
-                    const credit = investedPortion + pnl
+                    // Credit = current market price × quantity × lot size
+                    const credit = current * pos.quantity * pos.lotSize
                     totalCredit += credit
                   }
 
@@ -973,11 +973,11 @@ export default function PortfolioPage() {
                                                       ? lastPrices[strikeKey] 
                                                       : position.price)
 
-                                      // Calculate P&L for the portion being sold
+                                      // Calculate P&L for the portion being sold (for display only)
                                       const pnl = calculatePnL(position.price, current, qtySell * position.lotSize)
 
-                                      const investedPortion = position.price * qtySell * position.lotSize
-                                      const credit = investedPortion + pnl
+                                      // Credit = current market price × quantity × lot size
+                                      const credit = current * qtySell * position.lotSize
 
                                       // Add balance using API
                                       const balanceResult = await addBalance(credit, "SELL", `${position.index}-${position.strike}-${position.type}`, qtySell, current)

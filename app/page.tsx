@@ -27,6 +27,10 @@ const GainersLosers = dynamic(() => import("@/components/gainers-losers").then(m
   loading: () => <div className="h-24 bg-secondary/50 rounded-xl animate-pulse" />
 })
 
+const FiftyTwoWeekView = dynamic(() => import("@/components/52-week-view").then(mod => ({ default: mod.FiftyTwoWeekView })), {
+  loading: () => <div className="h-24 bg-secondary/50 rounded-xl animate-pulse" />
+})
+
 export default function HomePage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
@@ -92,11 +96,25 @@ export default function HomePage() {
             >
               <GainersLosers />
             </div>
+
+            {/* 52-Week Highs */}
+            <div
+              style={{ animationDelay: "0.4s" }}
+            >
+              <FiftyTwoWeekView type="near-high" title="52-Week Highs" description="Stocks near their 52-week highs" limit={20} />
+            </div>
+
+            {/* 52-Week Lows */}
+            <div
+              style={{ animationDelay: "0.5s" }}
+            >
+              <FiftyTwoWeekView type="near-low" title="52-Week Lows" description="Stocks near their 52-week lows" limit={10} />
+            </div>
           </div>
 
           {/* Sidebar with News */}
           <div className="w-full lg:w-80 space-y-4 md:space-y-6">
-            <div style={{ animationDelay: "0.4s" }}>
+            <div style={{ animationDelay: "0.6s" }}>
               <div className="rounded-2xl md:rounded-3xl border border-border/20 bg-gradient-to-br from-card/60 to-card/20 overflow-hidden shadow-lg">
                 <div className="bg-gradient-to-r from-accent/5 to-primary/5 px-4 md:px-5 py-4 md:py-4 border-b border-border/10">
                   <h2 className="text-lg md:text-lg font-bold text-foreground">Market News</h2>
