@@ -102,28 +102,42 @@ function calculateOptionPrice(
 // Fetch spot price for the index
 async function getSpotPrice(indexSymbol: string): Promise<number | null> {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/indices?symbol=${indexSymbol}`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    )
+    const appOrigin = process.env.NEXT_PUBLIC_APP_ORIGIN || "http://localhost:3000"
+    const url = `${appOrigin}/api/indices?symbol=${indexSymbol}`
+    
+    console.log(`[OPTIONS_CHAIN] Fetching spot price from: ${url}`)
+    
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 8000) // 8 second timeout
+    
+    const response = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      signal: controller.signal,
+    })
+    
+    clearTimeout(timeout)
 
     if (!response.ok) {
-      console.error(`Failed to fetch spot price for ${indexSymbol}:`, response.status)
+      console.error(`[OPTIONS_CHAIN] Failed to fetch spot price for ${indexSymbol}: ${response.status}`)
       return null
     }
 
     const data = await response.json()
+    console.log(`[OPTIONS_CHAIN] Received spot price data:`, { symbol: indexSymbol, price: data.price, success: data.success })
+    
     // API returns {success: true, price: number, symbol: string, ...}
     if (data.success && data.price !== undefined) {
       return data.price
     }
     return null
   } catch (error) {
-    console.error(`Error fetching spot price for ${indexSymbol}:`, error)
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error(`[OPTIONS_CHAIN] Timeout fetching spot price for ${indexSymbol} (exceeded 8s)`)
+    } else {
+      console.error(`[OPTIONS_CHAIN] Error fetching spot price for ${indexSymbol}:`, error)
+    }
     return null
   }
 }
@@ -211,13 +225,25 @@ export async function GET(request: NextRequest) {
     // Check if market is open
     const marketOpen = isMarketOpen()
 
-    // Fetch current spot price
-
+    // Fetch current spot price with timeout and fallback
     let spotPrice: number | null = null
     try {
-      spotPrice = await getSpotPrice(symbol)
+      spotPrice = await Promise.race([
+        getSpotPrice(symbol),
+        new Promise<null>((_, reject) => 
+          setTimeout(() => reject(new Error("Spot price fetch timeout")), 10000)
+        )
+      ])
     } catch (err) {
       console.error(`[OPTIONS_CHAIN] Error fetching spot price for ${symbol}:`, err)
+      // Use fallback prices if fetch fails
+      const fallbackPrices: Record<string, number> = {
+        "NIFTY": 25418.9,
+        "BANKNIFTY": 59957.85,
+        "SENSEX": 82566.37,
+      }
+      spotPrice = fallbackPrices[symbol] || null
+      console.log(`[OPTIONS_CHAIN] Using fallback price for ${symbol}: ${spotPrice}`)
     }
 
     if (spotPrice === null) {
@@ -242,12 +268,14 @@ export async function GET(request: NextRequest) {
       marketOpen,
     }
 
+    console.log(`[OPTIONS_CHAIN] Successfully generated chain for ${symbol} with ${strikes.length} strikes`)
+    
     return NextResponse.json({
       success: true,
       ...chainData,
     })
   } catch (error) {
-    console.error("Options chain API error:", error)
+    console.error("[OPTIONS_CHAIN] Options chain API error:", error)
     return NextResponse.json(
       {
         success: false,
