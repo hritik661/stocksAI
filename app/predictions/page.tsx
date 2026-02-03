@@ -103,55 +103,137 @@ export default function PredictionsPage() {
       </div>
 
       <main className="container mx-auto px-3 py-4 md:px-4 md:py-8">
-        {/* ALWAYS show hero for signed-in users */}
-        <PredictionsHero />
-
         {/* ABSOLUTE GATE: Show stocks ONLY if verifiedPaymentStatus === true */}
         {verifiedPaymentStatus === true ? (
           // ✅ PAID USER - Show all predictions
-          <div className="flex flex-col lg:flex-row gap-4 md:gap-8">
-            <div className="flex-1">
-              <PredictionsList />
-            </div>
-            <div className="w-full lg:w-80 space-y-4 md:space-y-8">
-              <NewsSection limit={8} />
-            </div>
-          </div>
-        ) : (
-          // 🔒 UNPAID USER - LOCKED SECTION (show this for ANY unpaid state)
-          <div className="flex flex-col lg:flex-row gap-4 md:gap-8">
-            <div className="flex-1">
-              <div className="rounded-xl border-2 border-red-500/50 bg-red-500/5 p-8 md:p-16 text-center min-h-[500px] flex flex-col items-center justify-center space-y-6">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-500/20 border-2 border-red-500">
-                  <Lock className="h-10 w-10 text-red-500" />
-                </div>
-                
-                <div className="space-y-3">
-                  <h2 className="text-4xl font-bold text-red-500">🔒 ALL STOCKS LOCKED</h2>
-                  <p className="text-xl text-foreground font-semibold">Payment Required to View Predictions</p>
-                </div>
-
-                <div className="bg-primary/10 border border-primary/30 rounded-lg p-6 space-y-3 max-w-md text-left">
-                  <p className="text-sm text-muted-foreground">
-                    ✗ All 1000+ stock predictions are <span className="font-bold text-red-500">HIDDEN</span>
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    ✗ Charts and analysis are <span className="font-bold text-red-500">BLOCKED</span>
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    ✗ Buy/Sell buttons are <span className="font-bold text-red-500">DISABLED</span>
-                  </p>
-                </div>
-
-                <div className="text-center space-y-2 bg-green-500/10 border border-green-500/30 rounded-lg p-6 max-w-md">
-                  <p className="text-green-500 font-bold text-lg">✓ UNLOCK FOR JUST ₹100</p>
-                  <p className="text-sm text-muted-foreground">Click "Access Predictions (Pay to Continue)" above</p>
-                  <p className="text-xs text-muted-foreground mt-2">Lifetime access • No recurring charges • Instant access</p>
-                </div>
+          <>
+            <PredictionsHero />
+            <div className="flex flex-col lg:flex-row gap-4 md:gap-8">
+              <div className="flex-1">
+                <PredictionsList />
+              </div>
+              <div className="w-full lg:w-80 space-y-4 md:space-y-8">
+                <NewsSection limit={8} />
               </div>
             </div>
-            <div className="w-full lg:w-80 space-y-4 md:space-y-8">
-              <NewsSection limit={8} />
+          </>
+        ) : (
+          // 🔒 UNPAID USER - FULL PAGE PAYMENT SECTION
+          <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-8">
+            <div className="w-full max-w-3xl">
+              {/* Payment Header */}
+              <div className="text-center mb-10 space-y-4 animate-fade-in-up">
+                <h1 className="text-4xl md:text-5xl font-extrabold">
+                  🔮 Access Premium Stock Predictions
+                </h1>
+                <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+                  Get access to high-quality stock predictions backed by strong fundamentals and real market strength — at a price that's almost unbelievable.
+                </p>
+              </div>
+
+              {/* Main Payment Box */}
+              <div className="bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-primary/40 rounded-2xl p-8 md:p-12 mb-8 animate-bounce-slow">
+                {/* Price Section */}
+                <div className="text-center mb-8">
+                  <p className="text-sm md:text-base text-muted-foreground mb-4 font-medium tracking-widest uppercase">🎯 SPECIAL LIFETIME OFFER</p>
+                  <h2 className="text-6xl md:text-7xl font-extrabold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+                    Just ₹100
+                  </h2>
+                  <ul className="space-y-4 text-base md:text-lg text-foreground font-semibold max-w-md mx-auto">
+                    <li className="flex items-center justify-center gap-3">
+                      <span className="text-2xl">✓</span>
+                      <span>Pay only once</span>
+                    </li>
+                    <li className="flex items-center justify-center gap-3">
+                      <span className="text-2xl">✓</span>
+                      <span>No monthly fees</span>
+                    </li>
+                    <li className="flex items-center justify-center gap-3">
+                      <span className="text-2xl">✓</span>
+                      <span>No hidden charges</span>
+                    </li>
+                    <li className="flex items-center justify-center gap-3">
+                      <span className="text-2xl">✓</span>
+                      <span>Lifetime access forever</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Features Section */}
+                <div className="border-t border-primary/30 pt-8 mb-8">
+                  <h3 className="text-2xl font-bold mb-6 text-center">🚀 What You Get</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-background/50 rounded-lg p-4 space-y-2">
+                      <p className="font-bold text-lg">✅ Strong Fundamental Stocks</p>
+                      <p className="text-sm text-muted-foreground">Only fundamentally strong, high-quality companies with solid business strength.</p>
+                    </div>
+                    <div className="bg-background/50 rounded-lg p-4 space-y-2">
+                      <p className="font-bold text-lg">✅ High-Potential Focus</p>
+                      <p className="text-sm text-muted-foreground">Stocks with strong momentum and real profit potential. Weak stocks automatically removed.</p>
+                    </div>
+                    <div className="bg-background/50 rounded-lg p-4 space-y-2">
+                      <p className="font-bold text-lg">✅ Live Market Updates</p>
+                      <p className="text-sm text-muted-foreground">Predictions update dynamically according to current market conditions.</p>
+                    </div>
+                    <div className="bg-background/50 rounded-lg p-4 space-y-2">
+                      <p className="font-bold text-lg">✅ 5-20% Stock Growth</p>
+                      <p className="text-sm text-muted-foreground">Carefully curated stocks with real potential for 5-20% growth.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stock Growth Highlight */}
+                <div className="bg-gradient-to-r from-green-500/30 to-emerald-500/30 border-2 border-green-500/60 rounded-xl p-6 text-center mb-8">
+                  <p className="text-3xl mb-3">📈</p>
+                  <p className="text-2xl font-bold text-green-400 mb-2">You Get 5% to 20% Stock Growth</p>
+                  <p className="text-muted-foreground">Predictions focus on stocks with real potential based on fundamental strength and market momentum.</p>
+                </div>
+
+                {/* Coverage */}
+                <div className="text-center mb-8">
+                  <p className="font-semibold mb-2">✓ Covers Top NSE & BSE Stocks</p>
+                  <p className="text-sm text-muted-foreground">Handpicked stocks from major sectors across NSE and BSE.</p>
+                </div>
+              </div>
+
+              {/* Action Buttons - Large and Prominent */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
+                <button
+                  onClick={() => window.location.href = '/'}
+                  className="px-8 py-4 rounded-xl border-2 border-muted-foreground hover:border-foreground hover:bg-muted/50 transition font-bold text-lg text-foreground"
+                >
+                  ✕ Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch('/api/predictions/create-payment', { method: 'POST' })
+                      const data = await res.json()
+                      if (data.paymentLink) {
+                        const paymentWindow = window.open(data.paymentLink, '_blank', 'width=500,height=700')
+                        const checkPayment = setInterval(async () => {
+                          if (paymentWindow && paymentWindow.closed) {
+                            clearInterval(checkPayment)
+                            window.location.href = '/predictions?from=payment'
+                          }
+                        }, 2000)
+                      }
+                    } catch (err) {
+                      alert('Error starting payment')
+                    }
+                  }}
+                  className="px-8 py-4 rounded-xl bg-gradient-to-r from-primary to-accent hover:shadow-2xl hover:scale-105 transition font-bold text-lg text-white shadow-lg"
+                >
+                  💳 Access to Pay
+                </button>
+              </div>
+
+              {/* Info Box */}
+              <div className="mt-8 p-6 bg-blue-500/10 border border-blue-500/30 rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">
+                  💡 <span className="font-semibold">Secure Payment:</span> Payments processed securely by Razorpay. No data stored on our servers.
+                </p>
+              </div>
             </div>
           </div>
         )}
