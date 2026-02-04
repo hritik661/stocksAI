@@ -1,6 +1,6 @@
 {
   "env": {
-    "NEXT_PUBLIC_APP_ORIGIN": "https://hritik-stockmarket.vercel.app",
+    "NEXT_PUBLIC_APP_ORIGIN": "https://v0-hritikstockmarketappmain-r5.vercel.app",
     "CRON_SECRET": "your-secure-cron-secret-key-here"
   },
   "crons": [
