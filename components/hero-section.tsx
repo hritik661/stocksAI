@@ -4,15 +4,26 @@ import { ArrowRight, TrendingUp, Zap, BarChart3, Target, Users } from "lucide-re
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/auth-context"
 import Link from "next/link"
+import { LOGOS } from "@/lib/logos-config"
 
 export function HeroSection() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
       {/* Removed background circles */}
       <div className="relative z-10 container mx-auto px-4 md:px-6 py-16 md:py-24 lg:py-32 flex flex-col items-center justify-center">
-        {/* StockAI Logo */}
-        <div className="mb-6 md:mb-8 animate-fade-in-up">
-          <img src="/stockai-logo.png" alt="StockAI" className="h-24 md:h-32 w-auto object-contain drop-shadow-2xl" onError={(e) => { e.currentTarget.src = '/stockai-logo.svg' }} />
+        {/* StockAI Logo - Professional Floating Design */}
+        <div className="mb-12 md:mb-16 flex justify-center">
+          <img 
+            src={LOGOS.main}
+            alt="StockAI" 
+            className="h-32 md:h-40 w-auto object-contain animate-glow-float" 
+            style={{ 
+              mixBlendMode: 'screen',
+              filter: 'brightness(1.2) contrast(1.1)',
+              backgroundColor: 'transparent'
+            }}
+            onError={(e) => { e.currentTarget.src = LOGOS.fallback[0] }} 
+          />
         </div>
 
         {/* Badge */}

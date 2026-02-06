@@ -16,7 +16,8 @@ import {
   getEffectivePrice,
   storeLastTradingPrice,
   getLastTradingPrice,
-  calculatePortfolioMetrics 
+  calculatePortfolioMetrics,
+  loadPricesFromDatabase 
 } from "@/lib/pnl-calculator"
 import { calculateOptionsPnL, calculateOptionsPnLPercent } from "@/lib/options-calculator"
 import { 
@@ -66,24 +67,7 @@ export default function PortfolioPage() {
   const [loading, setLoading] = useState(true)
   const [marketOpen, setMarketOpen] = useState(false)
 
-  // Helpers for storing last-known market prices so we have deterministic P/L
-  const getLastPrices = () => {
-    try {
-      if (!user) return {} as Record<string, number>
-      return JSON.parse(localStorage.getItem(`last_prices_${user.email}`) || "{}") as Record<string, number>
-    } catch {
-      return {}
-    }
-  }
-
-  const setLastPrice = (symbol: string, price: number) => {
-    try {
-      if (!user) return
-      const map = getLastPrices()
-      map[symbol] = price
-      localStorage.setItem(`last_prices_${user.email}`, JSON.stringify(map))
-    } catch {}
-  }
+  // Use exported helpers from lib/pnl-calculator for last-trading prices
 
   // Sync options with database
   const syncOptionsWithDatabase = async (localOptions: any[]) => {
@@ -215,6 +199,14 @@ export default function PortfolioPage() {
         console.warn("Failed to sync options with database:", error)
       }
 
+      // Load last trading prices from database for P&L persistence
+      try {
+        await loadPricesFromDatabase(user.email)
+        console.log("Loaded prices from database")
+      } catch (error) {
+        console.warn("Failed to load prices from database:", error)
+      }
+
       // Filter out any index holdings (NIFTY, BANKNIFTY, SENSEX) as they shouldn't be in portfolio
       // Only keep actual stock holdings
       const stockHoldings = storedHoldings.filter((holding: Holding) => {
@@ -237,7 +229,7 @@ export default function PortfolioPage() {
         
         // Check market status first
         const marketStatus = isMarketOpen()
-        const lastPrices = getLastPrices()
+        const lastPriceStored = getLastTradingPrice(user.email, holding.symbol)
         
         // Determine effective price for P&L calculation:
         // - If market is OPEN and we have a valid price: use current market price
@@ -250,10 +242,10 @@ export default function PortfolioPage() {
           effectivePrice = currentMarketPrice
           // Store the current market price for use when market closes
           storeLastTradingPrice(user.email, holding.symbol, currentMarketPrice)
-        } else if (!marketStatus.isOpen && typeof lastPrices[holding.symbol] === 'number' && lastPrices[holding.symbol] > 0) {
+        } else if (!marketStatus.isOpen && typeof lastPriceStored === 'number' && lastPriceStored > 0) {
           // Market is closed: use last trading price stored from yesterday's close
           // This ensures P&L persists even after market closes
-          effectivePrice = lastPrices[holding.symbol]
+          effectivePrice = lastPriceStored
         }
         
         const safeEffectivePrice = isNaN(effectivePrice) || effectivePrice <= 0 ? holding.avgPrice : effectivePrice
@@ -339,22 +331,21 @@ export default function PortfolioPage() {
             const data = await response.json()
             
             if (data.success && data.strikes && Array.isArray(data.strikes)) {
-              // Update prices for positions of this index
-              const lastPrices = getLastPrices()
-              
+              // Update prices for positions of this index using centralized storage
               data.strikes.forEach((strikeData: any) => {
                 // Find all positions matching this strike
                 positions.forEach((pos: any) => {
                   if (pos.index === indexSymbol && pos.strike === strikeData.strike) {
                     const currentPrice = pos.type === 'CE' ? strikeData.cePrice : strikeData.pePrice
                     const strikeKey = `${pos.index}-${pos.strike}-${pos.type}`
-                    lastPrices[strikeKey] = currentPrice
+                    try {
+                      storeLastTradingPrice(user.email, strikeKey, currentPrice)
+                    } catch (e) {
+                      // best-effort
+                    }
                   }
                 })
               })
-              
-              // Save updated prices
-              localStorage.setItem(`last_prices_${user.email}`, JSON.stringify(lastPrices))
               console.log(`Updated prices for ${indexSymbol}`)
             }
           } catch (error) {
@@ -606,9 +597,7 @@ export default function PortfolioPage() {
                               <p className="text-[10px] text-muted-foreground">Current</p>
                               <p className="font-mono text-xs">
                                 {isOption 
-                                  ? formatCurrency(typeof getLastPrices()[holding.symbol.replace('-OPT', '')] === 'number' && !isNaN(getLastPrices()[holding.symbol.replace('-OPT', '')]) 
-                                      ? getLastPrices()[holding.symbol.replace('-OPT', '')] 
-                                      : holding.avgPrice)
+                                  ? formatCurrency(getLastTradingPrice(user.email, holding.symbol.replace('-OPT', '')) ?? holding.avgPrice)
                                   : formatCurrency(holding.quote?.regularMarketPrice || holding.avgPrice)
                                 }
                               </p>
@@ -625,9 +614,7 @@ export default function PortfolioPage() {
                           <p className="text-xs md:text-sm text-muted-foreground">Current Price</p>
                           <p className="font-mono text-xs md:text-sm">
                             {isOption 
-                              ? formatCurrency(typeof getLastPrices()[holding.symbol.replace('-OPT', '')] === 'number' && !isNaN(getLastPrices()[holding.symbol.replace('-OPT', '')]) 
-                                  ? getLastPrices()[holding.symbol.replace('-OPT', '')] 
-                                  : holding.avgPrice)
+                              ? formatCurrency(getLastTradingPrice(user.email, holding.symbol.replace('-OPT', '')) ?? holding.avgPrice)
                               : formatCurrency(holding.quote?.regularMarketPrice || holding.avgPrice)
                             }
                           </p>
@@ -700,9 +687,9 @@ export default function PortfolioPage() {
                                     toast({ title: 'Transaction Failed', description: balanceResult.error, variant: 'destructive' })
                                     return
                                   }
-                                  
-                                  // store last-known price for deterministic P/L
-                                  try { setLastPrice(holding.symbol, price) } catch {}
+
+                                  // store last-known price for deterministic P&L
+                                  try { storeLastTradingPrice(user.email, holding.symbol, price) } catch {}
                                   toast({ title: 'Bought', description: `Bought ${qtyAdd} shares of ${holding.symbol}` })
                                 }
                               } catch (err) {
@@ -749,7 +736,7 @@ export default function PortfolioPage() {
                                     return
                                   }
                                   
-                                  try { setLastPrice(holding.symbol, price) } catch {}
+                                  try { storeLastTradingPrice(user.email, holding.symbol, price) } catch {}
                                   toast({ title: 'Sold', description: `Sold ${qtySell} shares of ${holding.symbol} for ${formatCurrency(totalCredit)}` })
                                 }
                               } catch (err) {
@@ -791,16 +778,11 @@ export default function PortfolioPage() {
                   }
 
                   let totalCredit = 0
-                  const lastPrices = getLastPrices()
-                  
+
                   // Calculate total credit from all positions
                   for (const pos of ops) {
                     const strikeKey = `${pos.index}-${pos.strike}-${pos.type}`
-                    const lastTradingPrice = getLastTradingPrice(user.email, strikeKey)
-                    const current = lastTradingPrice ?? 
-                                  (typeof lastPrices[strikeKey] === 'number' 
-                                    ? lastPrices[strikeKey] 
-                                    : pos.price)
+                    const current = getLastTradingPrice(user.email, strikeKey) ?? pos.price
                     
                     // Credit = current market price × quantity × lot size
                     const credit = current * pos.quantity * pos.lotSize
@@ -868,26 +850,9 @@ export default function PortfolioPage() {
                       // Fallback: Use entry price if no prices available
                       let currentPrice = pos.price
                       
-                      // Try to get price from storage functions that match options-calculator
+                      // Use stored last trading price when available, otherwise fallback to entry price
                       const storedLastTradingPrice = getLastTradingPrice(user.email, strikeKey)
-                      const lastPrices = getLastPrices()
-                      
-                      if (marketStatus.isOpen) {
-                        // Market is open - prefer live price, fallback to stored
-                        if (typeof lastPrices[strikeKey] === 'number' && lastPrices[strikeKey] > 0) {
-                          currentPrice = lastPrices[strikeKey]
-                        } else if (typeof storedLastTradingPrice === 'number' && storedLastTradingPrice > 0) {
-                          currentPrice = storedLastTradingPrice
-                        }
-                      } else {
-                        // Market is closed: use LAST TRADING PRICE for persistent P&L
-                        // This shows the P&L based on yesterday's closing price
-                        if (typeof storedLastTradingPrice === 'number' && storedLastTradingPrice > 0) {
-                          currentPrice = storedLastTradingPrice
-                        } else if (typeof lastPrices[strikeKey] === 'number' && lastPrices[strikeKey] > 0) {
-                          currentPrice = lastPrices[strikeKey]
-                        }
-                      }
+                      currentPrice = storedLastTradingPrice ?? pos.price
                       
                       // Calculate P&L using the options calculator with action and lotSize
                       const pnl = calculateOptionsPnL(
@@ -930,13 +895,7 @@ export default function PortfolioPage() {
                                       if (!qtyBuy) return
 
                                       const strikeKey = `${pos.index}-${pos.strike}-${pos.type}`
-                                      const lastTradingPrice = getLastTradingPrice(user.email, strikeKey)
-                                      const lastPrices = getLastPrices()
-                                      
-                                      const current = lastTradingPrice ?? 
-                                                    (typeof lastPrices[strikeKey] === 'number' 
-                                                      ? lastPrices[strikeKey] 
-                                                      : pos.price)
+                                      const current = getLastTradingPrice(user.email, strikeKey) ?? pos.price
 
                                       const newPos = {
                                         id: Math.random().toString(36).substring(7),
@@ -978,7 +937,7 @@ export default function PortfolioPage() {
                                         return
                                       }
                                       
-                                      try { setLastPrice(`${pos.index}-${pos.strike}-${pos.type}`, newPos.price) } catch {}
+                                      try { storeLastTradingPrice(user.email, `${pos.index}-${pos.strike}-${pos.type}`, newPos.price) } catch {}
                                       toast({ title: 'Order Placed', description: `Bought ${qtyBuy} lot(s) of ${pos.index} ${pos.strike} ${pos.type} @ ${formatCurrency(current)}` })
                                     } catch (err) {
                                       console.error(err)
@@ -1009,13 +968,7 @@ export default function PortfolioPage() {
                                       }
 
                                       const strikeKey = `${position.index}-${position.strike}-${position.type}`
-                                      const lastTradingPrice = getLastTradingPrice(user.email, strikeKey)
-                                      const lastPrices = getLastPrices()
-                                      
-                                      const current = lastTradingPrice ?? 
-                                                    (typeof lastPrices[strikeKey] === 'number' 
-                                                      ? lastPrices[strikeKey] 
-                                                      : position.price)
+                                      const current = getLastTradingPrice(user.email, strikeKey) ?? position.price
 
                                       // Calculate P&L for the portion being sold (for display only)
                                       const pnl = calculatePnL(position.price, current, qtySell * position.lotSize)
@@ -1031,7 +984,6 @@ export default function PortfolioPage() {
                                       }
                                       
                                       storeLastTradingPrice(user.email, strikeKey, current)
-                                      try { setLastPrice(strikeKey, current) } catch {}
 
                                       // Remove position from portfolio
                                       let updatedOps: any[] = []

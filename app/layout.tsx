@@ -10,6 +10,7 @@ import StartupRedirect from "@/components/startup-redirect"
 import LoginModal from "@/components/login-modal"
 import Providers from "@/components/providers"
 import "../styles/indices-ticker-mobile.css"
+import { LOGOS } from "@/lib/logos-config"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" })
@@ -21,19 +22,19 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/stockai-logo.png",
+        url: LOGOS.favicon.light,
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: "/stockai-logo.png",
+        url: LOGOS.favicon.dark,
         media: "(prefers-color-scheme: dark)",
       },
       {
-        url: "/stockai-logo.svg",
+        url: LOGOS.favicon.svg,
         type: "image/svg+xml",
       },
     ],
-    apple: "/stockai-logo.png",
+    apple: LOGOS.favicon.apple,
   },
 }
 

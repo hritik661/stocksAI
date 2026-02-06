@@ -143,6 +143,7 @@ export const INDIAN_STOCKS: Stock[] = [
   { symbol: "HINDZINC.NS", name: "Hindustan Zinc", sector: "Mining", exchange: "NSE", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Hindustan_Zinc_Limited_Logo.svg/1200px-Hindustan_Zinc_Limited_Logo.svg.png" },
   { symbol: "GOLDBEES.NS", name: "Nippon India Gold BeES", sector: "ETF", exchange: "NSE", logo: "https://via.placeholder.com/200?text=GOLD+BEES" },
   { symbol: "SILVERBEES.NS", name: "Nippon India Silver BeES", sector: "ETF", exchange: "NSE", logo: "https://via.placeholder.com/200?text=SILVER+BEES" },
+  { symbol: "APOLLOPIPE.NS", name: "Appolo Pipes", sector: "Industrials", exchange: "NSE", logo: "https://via.placeholder.com/200?text=APPOLO+PIPES" },
   { symbol: "DMART.NS", name: "Avenue Supermarts", sector: "Retail", exchange: "NSE", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/DMart_Logo.svg/1200px-DMart_Logo.svg.png" },
   { symbol: "TRENT.NS", name: "Trent", sector: "Retail", exchange: "NSE", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Trent_logo.svg/1200px-Trent_logo.svg.png" },
   { symbol: "ZOMATO.NS", name: "Zomato", sector: "Technology", exchange: "NSE", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Zomato_Logo.svg/1200px-Zomato_Logo.svg.png" },
@@ -479,6 +480,19 @@ export const INDIAN_STOCKS: Stock[] = [
   { symbol: "KANPUR.NS", name: "Kanpur Plastipack Ltd", sector: "Plastic Products", exchange: "NSE" },
   { symbol: "GOKALDAS.NS", name: "Gokaldas Exports Ltd", sector: "Textile", exchange: "NSE" },
   { symbol: "INDOCOUNT.NS", name: "Indo Count Industries Ltd", sector: "Textile", exchange: "NSE" },
+
+  // --- NEW TOP GAINERS STOCKS ---
+  { symbol: "HITACHIENERGY.NS", name: "Hitachi Energy Ltd", sector: "Power", exchange: "NSE" },
+  { symbol: "CONCORDBIO.NS", name: "Concord Biotech Ltd", sector: "Pharma", exchange: "NSE" },
+  { symbol: "DJMEDIAPRINT.NS", name: "DJ Mediaprint Ltd", sector: "Media & Print", exchange: "NSE" },
+  { symbol: "GODFREYPHIL.NS", name: "Godfrey Phillips India Ltd", sector: "FMCG", exchange: "NSE" },
+  { symbol: "MOTISONS.NS", name: "Motisons Jewellers Ltd", sector: "Jewellery", exchange: "NSE" },
+  { symbol: "INSPIRISYS.NS", name: "Inspirisys Solutions Ltd", sector: "IT", exchange: "NSE" },
+  { symbol: "GODAVARIBIO.NS", name: "Godavari Biorefineries Ltd", sector: "Chemicals", exchange: "NSE" },
+  { symbol: "GNCL.NS", name: "GNC Electronics Ltd", sector: "Electricals", exchange: "NSE" },
+  { symbol: "INDSWIFT.NS", name: "Ind-Swift Laboratories Ltd", sector: "Pharma", exchange: "NSE" },
+  { symbol: "SEPC.NS", name: "SEPC Ltd", sector: "Consumer", exchange: "NSE" },
+  { symbol: "DATAPATTERN.NS", name: "Data Pattern (India) Ltd", sector: "IT", exchange: "NSE" },
 
   // --- TOP 30 LOSER STOCKS FROM YAHOO FINANCE ---
   { symbol: "SUNTV.NS", name: "Sun TV Network Ltd", sector: "Media & Entertainment", exchange: "NSE" },

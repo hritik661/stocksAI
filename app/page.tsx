@@ -87,12 +87,14 @@ export default function HomePage() {
             <div className="p-4 md:p-6 rounded-2xl bg-gradient-to-r from-primary/10 via-accent/5 to-primary/5 border border-primary/20 md:border-border/50">
               <div className="flex gap-3 md:gap-4">
                 <div className="flex-1">
-                  <h2 className="font-bold text-base md:text-lg mb-1 md:mb-2">Welcome to Stocks AI!</h2>
+                  <h2 className="font-bold text-base md:text-lg mb-1 md:mb-2 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent animate-text-gradient">
+                    Welcome to Stocks AI!
+                  </h2>
                   <div className="flex flex-wrap gap-2">
-                    <Link href="/predictions" className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-colors">
+                    <Link href="/predictions" className="text-xs font-semibold px-3 py-1.5 rounded-lg text-primary hover:text-primary/80 transition-colors animate-button-pulse hover:animate-none">
                       📊 View AI Predictions
                     </Link>
-                    <Link href="/about" className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors">
+                    <Link href="/about" className="text-xs font-semibold px-3 py-1.5 rounded-lg text-accent hover:text-accent/80 transition-colors">
                       ℹ️ Learn More
                     </Link>
                   </div>

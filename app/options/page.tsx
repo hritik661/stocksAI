@@ -20,7 +20,8 @@ import {
   calculateAveragePrice,
   storeLastTradingPrice, 
   getLastTradingPrice,
-  getEffectivePrice 
+  getEffectivePrice,
+  loadPricesFromDatabase 
 } from "@/lib/options-calculator"
 import { useBalance } from "@/hooks/use-balance"
 import { TrendingUp, TrendingDown, Activity, Volume2, Zap, ShoppingCart, CircleDollarSign, RefreshCw } from "lucide-react"
@@ -142,6 +143,11 @@ export default function OptionsPage() {
             })
           }
         }
+        
+        // Load prices from database for P&L persistence
+        loadPricesFromDatabase(user.email).catch(err => 
+          console.warn('Failed to load prices from database:', err)
+        )
       }
     } catch (err) {
       console.error("Error loading positions:", err)

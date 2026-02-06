@@ -18,6 +18,7 @@ import { formatCurrency } from "@/lib/market-utils"
 import { searchStocks } from "@/lib/yahoo-finance"
 import { INDIAN_STOCKS } from "@/lib/stocks-data"
 import { cn } from "@/lib/utils"
+import { LOGOS } from "@/lib/logos-config"
 
 export function Header({ isLandingPage = false, hideBalance = false }: { isLandingPage?: boolean, hideBalance?: boolean }) {
   const { user, logout, updateBalance } = useAuth()
@@ -78,7 +79,7 @@ export function Header({ isLandingPage = false, hideBalance = false }: { isLandi
           <div className="flex-shrink-0 flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <div className="relative h-8 w-8 md:h-10 md:w-10 flex items-center justify-center">
-                <img src="/stockai-logo.png" alt="StockAI" className="h-full w-full object-contain" onError={(e) => { e.currentTarget.src = '/stockai-logo.svg' }} />
+                <img src={LOGOS.main} alt="StockAI" className="h-full w-full object-contain" onError={(e) => { e.currentTarget.src = LOGOS.fallback[0] }} />
               </div>
               <span className="hidden sm:inline text-sm md:text-base font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                 StockAI

@@ -10,8 +10,11 @@ import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight } from "lucide-r
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { quoteCache } from "@/lib/cache-utils"
+import { useAuth } from "@/contexts/auth-context"
+import { Button } from "@/components/ui/button"
 
 export function GainersLosers() {
+  const { user } = useAuth()
   const [gainers, setGainers] = useState<StockQuote[]>([])
   const [losers, setLosers] = useState<StockQuote[]>([])
   const [loading, setLoading] = useState(true)
@@ -100,7 +103,7 @@ export function GainersLosers() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-6">
-      {/* Top Gainers Card */}
+      {/* Top Gainers Card - With Paywall */}
       <Card className="shadow-lg bg-card hover:border-primary/30 transition-colors p-1 md:p-2">
         <CardHeader className="pb-0.5 md:pb-2">
           <CardTitle className="text-xs md:text-base flex items-center gap-1 md:gap-2">

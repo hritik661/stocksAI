@@ -162,6 +162,9 @@ export function getEffectivePrice(
 /**
  * Store last trading price for a symbol
  * Used to maintain deterministic P&L when market is closed
+ * 
+ * Strategy: Store in localStorage immediately for sync access,
+ * then sync to database asynchronously in background
  */
 export function storeLastTradingPrice(
   userEmail: string,
@@ -187,6 +190,11 @@ export function storeLastTradingPrice(
     }
 
     localStorage.setItem(key, JSON.stringify(prices))
+    
+    // Sync to database in background (non-blocking)
+    syncPriceToDatabase(userEmail, symbol, price).catch(err => 
+      console.warn("Failed to sync price to database:", err)
+    )
   } catch (error) {
     console.warn("Failed to store last trading price:", error)
   }
@@ -217,6 +225,63 @@ export function getLastTradingPrice(
   } catch (error) {
     console.warn("Failed to get last trading price:", error)
     return undefined
+  }
+}
+
+/**
+ * Load last trading prices from database for a user
+ * This is async - use await when calling
+ */
+export async function loadPricesFromDatabase(userEmail: string): Promise<Record<string, number>> {
+  try {
+    const response = await fetch("/api/prices/load", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: userEmail })
+    })
+
+    const data = await response.json()
+    if (data.success && data.prices) {
+      // Also sync to localStorage for faster access
+      const key = `last_trading_price_${userEmail}`
+      const prices: any = {}
+      Object.entries(data.prices).forEach(([symbol, price]: [string, any]) => {
+        prices[symbol] = {
+          price,
+          timestamp: Date.now(),
+        }
+      })
+      localStorage.setItem(key, JSON.stringify(prices))
+      return data.prices
+    }
+    return {}
+  } catch (error) {
+    console.warn("Failed to load prices from database:", error)
+    return {}
+  }
+}
+
+/**
+ * Sync price to database via API
+ * Non-blocking, runs in background
+ */
+async function syncPriceToDatabase(
+  userEmail: string,
+  symbol: string,
+  price: number
+): Promise<void> {
+  try {
+    const response = await fetch("/api/prices/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: userEmail, symbol, price })
+    })
+    
+    if (!response.ok) {
+      console.warn("Failed to sync price:", response.statusText)
+    }
+  } catch (error) {
+    console.warn("Failed to sync price to database:", error)
   }
 }
 

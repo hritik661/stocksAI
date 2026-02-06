@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useAuth } from "@/contexts/auth-context"
+import { LOGOS } from "@/lib/logos-config"
 
 export function LoginForm({ compact, full, compactOnly }: { compact?: boolean; full?: boolean; compactOnly?: boolean }) {
   const router = useRouter()
@@ -103,7 +104,7 @@ export function LoginForm({ compact, full, compactOnly }: { compact?: boolean; f
       <Card className={`${cardWidth}`}>
         <div className={`grid grid-cols-1 md:grid-cols-2 rounded-xl overflow-hidden shadow-2xl`}>
           <div className={`hidden md:flex flex-col items-center justify-center p-10 bg-gradient-to-br from-primary to-emerald-400 text-black gap-6`}>
-            <img src="/stockai-logo.png" alt="StockAI" className="h-16 w-16 object-contain drop-shadow-lg" onError={(e) => { e.currentTarget.src = '/stockai-logo.svg' }} />
+            <img src={LOGOS.main} alt="StockAI" className="h-16 w-16 object-contain drop-shadow-lg" onError={(e) => { e.currentTarget.src = LOGOS.fallback[0] }} />
             <div className="text-center">
               <h3 className="text-3xl md:text-4xl font-extrabold">StockAI</h3>
               <p className="mt-3 text-sm opacity-95">Secure Login via Email</p>

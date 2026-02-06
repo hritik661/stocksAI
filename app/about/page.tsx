@@ -123,9 +123,9 @@ export default function AboutPage() {
           
           <div className="space-y-6 md:space-y-8">
             <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20 md:border-border">
-              <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">What is Hritik Stocks?</h3>
+              <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">What is Stock AI?</h3>
               <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-                Hritik Stocks is a revolutionary trading simulation platform designed for Indian investors and traders. We provide a risk-free environment to learn, practice, and master stock market trading with real market data, AI-powered predictions, and advanced analytics tools. Whether you're a beginner or an experienced trader, our platform empowers you to make informed trading decisions.
+                 Stocks AI is a revolutionary trading simulation platform designed for Indian investors and traders. We provide a risk-free environment to learn, practice, and master stock market trading with real market data, AI-powered predictions, and advanced analytics tools. Whether you're a beginner or an experienced trader, our platform empowers you to make informed trading decisions.
               </p>
             </div>
 
