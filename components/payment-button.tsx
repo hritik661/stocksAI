@@ -14,13 +14,23 @@ export function PaymentButton() {
   const handlePayment = async () => {
     setLoading(true)
     try {
-      // If no session cookie is available, ask user to sign in
-      const hasCookie = typeof document !== 'undefined' && document.cookie.includes('session_token=')
-      if (!hasCookie) {
+      // Check session from backend with proper cache-busting
+      const authCheck = await fetch('/api/auth/me?t=' + Date.now(), {
+        method: 'GET',
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      })
+      
+      if (!authCheck.ok) {
         setLoading(false)
         toast({ title: 'Sign in required', description: 'Please sign in to continue to payment.', variant: 'default' })
         return
       }
+      
       const response = await fetch('/api/predictions/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

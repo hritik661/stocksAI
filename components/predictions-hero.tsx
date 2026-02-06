@@ -13,8 +13,16 @@ const handlePredictionClick = async (
 ) => {
   // Directly initiate payment without showing modal first
   try {
-    // Check session from backend
-    const authCheck = await fetch('/api/auth/me')
+    // Check session from backend with proper cache-busting
+    const authCheck = await fetch('/api/auth/me?t=' + Date.now(), {
+      method: 'GET',
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    })
     if (!authCheck.ok) {
       alert('Please sign in to continue to payment.')
       return
