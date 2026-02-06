@@ -255,7 +255,7 @@ export default function AboutPage() {
                   Identify High-Potential Gainers Before They Move
                 </p>
                 <Button asChild className="w-full bg-emerald-600 hover:bg-emerald-700 rounded-xl text-sm md:text-base">
-                  <Link href="/predictions">
+                  <Link href="/top-gainers">
                     Explore Top Gainers - ₹200
                     <ArrowRight className="h-3 w-3 md:h-4 md:w-4 ml-2" />
                   </Link>

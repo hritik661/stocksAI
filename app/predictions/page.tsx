@@ -210,10 +210,10 @@ export default function PredictionsPage() {
             {showPaymentSuccessModal ? (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                 <div className="w-full max-w-xl mx-4 bg-white dark:bg-card rounded-2xl p-8 shadow-2xl text-center">
-                  <h2 className="text-2xl md:text-3xl font-extrabold mb-4">🎉 Welcome to the Prediction Stock Page!</h2>
-                  <p className="text-base text-muted-foreground mb-6">Your payment was successful.</p>
-                  <p className="text-base font-semibold mb-6">You now have lifetime access to all stock prediction services. Enjoy high-quality predictions based on strong fundamentals and market strength — forever.</p>
-                  <p className="text-sm text-muted-foreground mb-6">📈 Happy Trading &amp; Investing!</p>
+                  <h2 className="text-2xl md:text-3xl font-extrabold mb-4">🎉 Welcome to Stock Predictions Module!</h2>
+                  <p className="text-base text-muted-foreground mb-3">Your payment was successful.</p>
+                  <p className="text-base font-semibold mb-4">Enjoy exclusive access to all stock predictions for lifetime. Thank you for choosing Stocks AI 🙏</p>
+                  <p className="text-sm text-muted-foreground mb-6">📈 Happy Investing!</p>
                   <div className="flex items-center justify-center">
                     <button
                       onClick={() => {
