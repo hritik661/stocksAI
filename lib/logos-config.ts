@@ -9,7 +9,7 @@ export const LOGOS = {
   
   // Fallback logos (in priority order)
   fallback: [
-    "/stockai-logo.svg",
+    "/logos.png",
     "/stockai-logo-preview.html",
   ],
   

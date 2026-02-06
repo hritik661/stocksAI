@@ -16,7 +16,7 @@ export function HeroSection() {
           <img 
             src={LOGOS.main}
             alt="StockAI" 
-            className="h-32 md:h-40 w-auto object-contain animate-glow-float" 
+            className="h-48 md:h-64 w-auto object-contain" 
             style={{ 
               mixBlendMode: 'screen',
               filter: 'brightness(1.2) contrast(1.1)',
@@ -34,10 +34,7 @@ export function HeroSection() {
 
         {/* Main Heading */}
         <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-center text-foreground mb-4 md:mb-6 max-w-4xl leading-tight">
-          Master Stock Market Trading with{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
-            StockAI
-          </span>
+          Master Stock Market Trading
         </h1>
 
         {/* Subtitle */}
