@@ -103,10 +103,10 @@ export function LoginForm({ compact, full, compactOnly }: { compact?: boolean; f
       <Card className={`${cardWidth}`}>
         <div className={`grid grid-cols-1 md:grid-cols-2 rounded-xl overflow-hidden shadow-2xl`}>
           <div className={`hidden md:flex flex-col items-center justify-center p-10 bg-gradient-to-br from-primary to-emerald-400 text-black gap-6`}>
-            <Mail className="h-10 w-10 text-white" />
+            <img src="/stockai-logo.png" alt="StockAI" className="h-16 w-16 object-contain drop-shadow-lg" onError={(e) => { e.currentTarget.src = '/stockai-logo.svg' }} />
             <div className="text-center">
-              <h3 className="text-3xl md:text-4xl font-extrabold">Gmail Login</h3>
-              <p className="mt-3 text-sm opacity-95">Quick and secure</p>
+              <h3 className="text-3xl md:text-4xl font-extrabold">StockAI</h3>
+              <p className="mt-3 text-sm opacity-95">Secure Login via Email</p>
             </div>
           </div>
 

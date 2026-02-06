@@ -82,17 +82,17 @@ export function MarketTicker() {
                 <p className="text-xs md:text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                   {ticker.name}
                 </p>
-                <p className={`text-xs md:text-sm font-semibold ${isPositive ? "text-green-500" : "text-red-500"}`}>
+                <p className={`text-xs md:text-sm font-semibold ${isPositive ? "text-emerald-400" : "text-red-500"}`}>
                   ₹{ticker.price.toFixed(2)}
                 </p>
               </div>
-              <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${isPositive ? "bg-green-500/10" : "bg-red-500/10"}`}>
+              <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${isPositive ? "bg-emerald-700/25" : "bg-red-500/10"}`}>
                 {isPositive ? (
-                  <ArrowUpIcon className="h-3 md:h-4 w-3 md:w-4 text-green-500" />
+                  <ArrowUpIcon className="h-3 md:h-4 w-3 md:w-4 text-emerald-400" />
                 ) : (
                   <ArrowDownIcon className="h-3 md:h-4 w-3 md:w-4 text-red-500" />
                 )}
-                <span className={`text-xs md:text-sm font-bold ${isPositive ? "text-green-500" : "text-red-500"}`}>
+                <span className={`text-xs md:text-sm font-bold ${isPositive ? "text-emerald-400" : "text-red-500"}`}>
                   {ticker.changePercent.toFixed(2)}%
                 </span>
               </div>

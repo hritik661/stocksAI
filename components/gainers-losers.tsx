@@ -172,12 +172,9 @@ export function GainersLosers() {
                     <h3 className="font-semibold text-xs md:text-sm truncate">
                       {stock.symbol.replace('.NS', '').replace('.BO', '')}
                     </h3>
-                    <Badge
-                      variant="destructive"
-                      className="text-[10px] md:text-xs px-1 md:px-1.5 py-0.5 bg-destructive/20 text-destructive"
-                    >
+                    <span className="text-[10px] md:text-xs text-destructive font-semibold">
                       {formatPercentage(stock.regularMarketChangePercent)}
-                    </Badge>
+                    </span>
                   </div>
                   <p className="text-[10px] md:text-xs text-muted-foreground truncate">
                     {stock.shortName || stock.longName}

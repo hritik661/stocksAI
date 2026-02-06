@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
           ? `${process.env.GMAIL_FROM_NAME} <${process.env.GMAIL_USER}>`
           : process.env.GMAIL_USER,
         to: email,
-        subject: "Your Hrtik Stocks Login Code",
+        subject: "Your StockAI Login Code",
         html: generateEmailHTML(otp),
       }
 
@@ -127,12 +127,12 @@ function generateEmailHTML(otp: string): string {
         <div class="container">
           <div class="email-box">
             <div class="header">
-              <h1>🚀 Hrtik Stocks</h1>
+              <h1>🚀 StockAI</h1>
               <p style="margin: 10px 0 0 0; opacity: 0.9;">Your OTP Code</p>
             </div>
             <div class="content">
               <h2>Login Verification</h2>
-              <p style="color: #666; margin: 0 0 20px 0;">Enter this code to sign in to your account:</p>
+              <p style="color: #666; margin: 0 0 20px 0;">Enter this code to sign in to your StockAI account:</p>
               <div class="otp-box">
                 <div class="otp">${otp}</div>
               </div>
@@ -145,7 +145,7 @@ function generateEmailHTML(otp: string): string {
               <p style="color: #999; font-size: 13px; margin-top: 20px;">If you didn't request this code, please ignore this email.</p>
             </div>
             <div class="footer">
-              <p style="margin: 0;">© 2026 Hrtik Stocks. All rights reserved.</p>
+              <p style="margin: 0;">© 2026 StockAI. All rights reserved.</p>
               <p style="margin: 5px 0 0 0;">This is an automated email. Please do not reply.</p>
             </div>
           </div>

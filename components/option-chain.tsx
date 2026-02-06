@@ -86,7 +86,7 @@ export function OptionChain({ stockPrice, symbol, onTrade, onStockTrade }: Optio
                 <Button
                   variant="default"
                   size="sm"
-                  className="bg-green-600 hover:bg-green-700 text-white font-bold h-7 px-3 text-xs"
+                  className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold h-7 px-3 text-xs"
                   onClick={() => onStockTrade("BUY", stockPrice)}
                 >
                   BUY

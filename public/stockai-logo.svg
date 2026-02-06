@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+  <defs>
+    <style>
+      .logo-text { fill: white; font-family: 'Arial', sans-serif; font-weight: 900; }
+      .logo-ai { fill: #0ea5e9; font-family: 'Arial', sans-serif; font-weight: 900; }
+    </style>
+    <linearGradient id="chartGrad1" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="chartGrad2" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="chartGrad3" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0284c7;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="600" height="600" fill="#0a0e27"/>
+  
+  <!-- Glow background circles -->
+  <circle cx="200" cy="250" r="150" fill="#0ea5e9" opacity="0.08"/>
+  <circle cx="400" cy="250" r="120" fill="#10b981" opacity="0.06"/>
+  
+  <!-- Chart bars (left side) -->
+  <g transform="translate(100, 240)">
+    <!-- Yellow bar -->
+    <rect x="10" y="100" width="35" height="80" fill="url(#chartGrad1)" rx="3"/>
+    
+    <!-- Green bar -->
+    <rect x="60" y="70" width="35" height="110" fill="url(#chartGrad2)" rx="3"/>
+    
+    <!-- Cyan bar 1 -->
+    <rect x="110" y="40" width="35" height="140" fill="url(#chartGrad3)" rx="3"/>
+    
+    <!-- Cyan bar 2 -->
+    <rect x="160" y="60" width="35" height="120" fill="#0891b2" rx="3"/>
+  </g>
+  
+  <!-- Curved arrow -->
+  <g transform="translate(80, 180)">
+    <path d="M 60 140 Q 140 90 240 40" fill="none" stroke="#0ea5e9" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+    <path d="M 60 140 Q 140 90 240 40" fill="none" stroke="#06b6d4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
+    <!-- Arrow head -->
+    <polygon points="240,40 265,25 250,60" fill="#0ea5e9"/>
+  </g>
+  
+  <!-- AI Brain (right side) -->
+  <g transform="translate(310, 120)" filter="url(#glow)">
+    <!-- Brain outline -->
+    <path d="M 100 50 Q 130 30 150 50 Q 170 35 185 60 Q 195 45 210 70 L 205 150 Q 170 175 100 175 Q 40 175 5 150 Z" 
+          fill="none" stroke="#0ea5e9" stroke-width="4" stroke-linejoin="round"/>
+    
+    <!-- Left lobe -->
+    <circle cx="50" cy="90" r="12" fill="none" stroke="#0ea5e9" stroke-width="2"/>
+    <circle cx="50" cy="90" r="6" fill="#0ea5e9" opacity="0.8"/>
+    
+    <!-- Top lobe -->
+    <circle cx="100" cy="50" r="12" fill="none" stroke="#06b6d4" stroke-width="2"/>
+    <circle cx="100" cy="50" r="6" fill="#06b6d4" opacity="0.9"/>
+    
+    <!-- Right lobe top -->
+    <circle cx="160" cy="70" r="12" fill="none" stroke="#0ea5e9" stroke-width="2"/>
+    <circle cx="160" cy="70" r="6" fill="#0ea5e9" opacity="0.8"/>
+    
+    <!-- Right lobe bottom -->
+    <circle cx="180" cy="120" r="12" fill="none" stroke="#06b6d4" stroke-width="2"/>
+    <circle cx="180" cy="120" r="6" fill="#06b6d4" opacity="0.9"/>
+    
+    <!-- Bottom center -->
+    <circle cx="100" cy="145" r="12" fill="none" stroke="#0ea5e9" stroke-width="2"/>
+    <circle cx="100" cy="145" r="6" fill="#0ea5e9" opacity="0.8"/>
+    
+    <!-- Connection lines -->
+    <line x1="50" y1="90" x2="100" y2="50" stroke="#0ea5e9" stroke-width="2" opacity="0.5"/>
+    <line x1="100" y1="50" x2="160" y2="70" stroke="#0ea5e9" stroke-width="2" opacity="0.5"/>
+    <line x1="160" y1="70" x2="180" y2="120" stroke="#06b6d4" stroke-width="2" opacity="0.5"/>
+    <line x1="180" y1="120" x2="100" y2="145" stroke="#0ea5e9" stroke-width="2" opacity="0.5"/>
+    <line x1="100" y1="145" x2="50" y2="90" stroke="#06b6d4" stroke-width="2" opacity="0.5"/>
+    
+    <!-- Connecting circuit lines -->
+    <line x1="210" y1="70" x2="230" y2="60" stroke="#0ea5e9" stroke-width="1.5" opacity="0.4"/>
+    <line x1="230" y1="60" x2="250" y2="75" stroke="#0ea5e9" stroke-width="1.5" opacity="0.4"/>
+    <line x1="210" y1="120" x2="240" y2="130" stroke="#06b6d4" stroke-width="1.5" opacity="0.4"/>
+    
+    <!-- Glowing dots on connections -->
+    <circle cx="230" cy="60" r="3" fill="#0ea5e9"/>
+    <circle cx="250" cy="75" r="3" fill="#0ea5e9"/>
+    <circle cx="240" cy="130" r="3" fill="#06b6d4"/>
+  </g>
+  
+  <!-- Text: Stock -->
+  <text x="150" y="420" text-anchor="end" font-size="85" class="logo-text">Stock</text>
+  
+  <!-- Text: AI -->
+  <text x="250" y="420" text-anchor="start" font-size="85" class="logo-ai">AI</text>
+  
+  <!-- Bottom glow line -->
+  <line x1="80" y1="460" x2="520" y2="460" stroke="#0ea5e9" stroke-width="2" opacity="0.3"/>
+  <ellipse cx="300" cy="470" rx="120" ry="25" fill="#0ea5e9" opacity="0.1"/>
+</svg>

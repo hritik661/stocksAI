@@ -14,25 +14,25 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" })
 
 export const metadata: Metadata = {
-  title: "Hrtik Stock Market Application - Indian Stock Trading Platform",
-  description: "Trade Indian stocks with real-time data, advanced charts, predictions, and portfolio management",
+  title: "StockAI - AI-Powered Indian Stock Trading Platform",
+  description: "Trade Indian stocks with real-time data, advanced charts, AI predictions, and portfolio management powered by machine learning",
   generator: "v0.app",
   icons: {
     icon: [
       {
-        url: "/icon-light-32x32.png",
+        url: "/stockai-logo.png",
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: "/icon-dark-32x32.png",
+        url: "/stockai-logo.png",
         media: "(prefers-color-scheme: dark)",
       },
       {
-        url: "/icon.svg",
+        url: "/stockai-logo.svg",
         type: "image/svg+xml",
       },
     ],
-    apple: "/apple-icon.png",
+    apple: "/stockai-logo.png",
   },
 }
 

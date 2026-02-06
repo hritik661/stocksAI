@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { Card, CardContent } from "@/components/ui/card"
 import { Target, Zap, Users, Award, ArrowRight, CheckCircle2, Globe, Lock, BarChart3, ShoppingCart, Smartphone } from "lucide-react"
 import ChatSupport from "@/components/chat-support"
+import { TrendingUp } from "lucide-react"
 
 export default function AboutPage() {
   const { user } = useAuth();
@@ -100,19 +101,180 @@ export default function AboutPage() {
           <div className="text-center p-4 md:p-8 rounded-2xl bg-secondary/50 border border-primary/20 md:border-border">
             <div className="text-2xl md:text-4xl font-black text-primary mb-2 md:mb-3">10K+</div>
             <p className="text-muted-foreground font-medium text-sm md:text-base">Active Traders</p>
-            <p className="text-xs text-muted-foreground mt-1 md:mt-2">Trading on daily</p>
+            <p className="text-xs text-muted-foreground mt-1 md:mt-2">Trading on daily basis</p>
           </div>
 
           <div className="text-center p-4 md:p-8 rounded-2xl bg-secondary/50 border border-primary/20 md:border-border">
             <div className="text-2xl md:text-4xl font-black text-primary mb-2 md:mb-3">50+</div>
             <p className="text-muted-foreground font-medium text-sm md:text-base">Nifty Stocks Tracked</p>
-            <p className="text-xs text-muted-foreground mt-1 md:mt-2">With AI predictions</p>
+            <p className="text-xs text-muted-foreground mt-1 md:mt-2">With AI predictions & analytics</p>
           </div>
 
           <div className="text-center p-4 md:p-8 rounded-2xl bg-secondary/50 border border-primary/20 md:border-border">
             <div className="text-2xl md:text-4xl font-black text-primary mb-2 md:mb-3">24/7</div>
             <p className="text-muted-foreground font-medium text-sm md:text-base">Market Coverage</p>
-            <p className="text-xs text-muted-foreground mt-1 md:mt-2">Global market insights</p>
+            <p className="text-xs text-muted-foreground mt-1 md:mt-2">Real-time insights & updates</p>
+          </div>
+        </div>
+
+        {/* About Us Section */}
+        <div className="max-w-4xl mx-auto mb-12 md:mb-20">
+          <h2 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8 text-center">About Stocks AI</h2>
+          
+          <div className="space-y-6 md:space-y-8">
+            <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20 md:border-border">
+              <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">What is Hritik Stocks?</h3>
+              <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
+                Hritik Stocks is a revolutionary trading simulation platform designed for Indian investors and traders. We provide a risk-free environment to learn, practice, and master stock market trading with real market data, AI-powered predictions, and advanced analytics tools. Whether you're a beginner or an experienced trader, our platform empowers you to make informed trading decisions.
+              </p>
+            </div>
+
+            <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-blue-500/5 to-cyan-500/5 border border-blue-400/20">
+              <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Our Mission</h3>
+              <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
+                Our mission is to democratize stock market access and financial education for every Indian. We believe that everyone should have the opportunity to learn trading, test strategies, and build confidence without risking real capital. We're committed to providing institutional-grade tools at affordable prices, making professional trading accessible to retail investors.
+              </p>
+            </div>
+
+            <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-green-500/5 to-emerald-500/5 border border-green-400/20">
+              <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Why Trade with Us?</h3>
+              <ul className="space-y-3 md:space-y-4 text-sm md:text-base text-muted-foreground">
+                <li className="flex gap-3 items-start">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Real Market Data:</strong> Track actual NSE stocks with live price updates and accurate market movements</span>
+                </li>
+                <li className="flex gap-3 items-start">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>AI Predictions:</strong> Advanced ML models predicting stock movements with 85%+ accuracy for select stocks</span>
+                </li>
+                <li className="flex gap-3 items-start">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Virtual Trading:</strong> Practice with ₹10,00,000 virtual capital, no real money required</span>
+                </li>
+                <li className="flex gap-3 items-start">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Options Trading:</strong> Learn and trade stock options with detailed greeks, P&L calculations, and risk management tools</span>
+                </li>
+                <li className="flex gap-3 items-start">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Persistent Portfolio:</strong> Your trades, P&L, and balance sync across devices and sessions</span>
+                </li>
+                <li className="flex gap-3 items-start">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Security First:</strong> OAuth authentication, encrypted data, and bank-grade security</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-yellow-500/5 to-amber-500/5 border border-yellow-400/20">
+              <div className="flex items-center gap-3 mb-4">
+                <TrendingUp className="h-6 w-6 md:h-7 md:w-7 text-amber-500" />
+                <h3 className="text-lg md:text-xl font-bold">Premium Predictions - Only ₹200</h3>
+              </div>
+              <p className="text-muted-foreground text-sm md:text-base mb-4 leading-relaxed">
+                Unlock our exclusive AI prediction engine for just <span className="font-bold text-amber-500">₹200</span> and enjoy unlimited access to all prediction services! Get institutional-grade market insights at fraction of the cost.
+              </p>
+              <div className="space-y-3 md:space-y-4">
+                <p className="font-semibold text-sm md:text-base text-foreground">What You Get:</p>
+                <ul className="space-y-2 md:space-y-3 text-xs md:text-sm text-muted-foreground">
+                  <li className="flex gap-3 items-start">
+                    <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <span><strong>All Stock Predictions:</strong> AI-powered predictions for 50+ Nifty stocks with confidence scores and expected growth targets</span>
+                  </li>
+                  <li className="flex gap-3 items-start">
+                    <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <span><strong>Top Gainers Predictions:</strong> Identify best performing stocks before they move with our top gainer analysis</span>
+                  </li>
+                  <li className="flex gap-3 items-start">
+                    <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <span><strong>Top Losers Analysis:</strong> Get ahead of market downturns with predictive losers identification</span>
+                  </li>
+                  <li className="flex gap-3 items-start">
+                    <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <span><strong>Fundamental Analysis:</strong> Deep insights into company fundamentals, P/E ratios, growth metrics, and financial health</span>
+                  </li>
+                  <li className="flex gap-3 items-start">
+                    <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <span><strong>Technical Indicators:</strong> Advanced charting tools with 20+ technical indicators for informed decision-making</span>
+                  </li>
+                  <li className="flex gap-3 items-start">
+                    <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <span><strong>Market Trends & Alerts:</strong> Real-time notifications for high-confidence predictions and market opportunities</span>
+                  </li>
+                  <li className="flex gap-3 items-start">
+                    <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <span><strong>One-Time Payment:</strong> Pay once and enjoy unlimited access with automatic sync across all your devices</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="mt-6 pt-6 border-t border-amber-200/30">
+                <p className="text-center text-sm md:text-base font-semibold text-foreground mb-4">
+                  85%+ Accuracy on Growth Predictions
+                </p>
+                <Button asChild className="w-full bg-amber-600 hover:bg-amber-700 rounded-xl text-sm md:text-base">
+                  <Link href="/predictions">
+                    Unlock Predictions Now - ₹200
+                    <ArrowRight className="h-3 w-3 md:h-4 md:w-4 ml-2" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-purple-500/5 to-pink-500/5 border border-purple-400/20">
+              <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Key Features</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 text-sm md:text-base text-muted-foreground">
+                <div className="flex gap-2">
+                  <span className="text-primary font-bold">•</span>
+                  <span><strong>Stock Screening:</strong> Find trending stocks with powerful filters</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-primary font-bold">•</span>
+                  <span><strong>Technical Analysis:</strong> Candlestick charts with 20+ indicators</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-primary font-bold">•</span>
+                  <span><strong>P&L Tracking:</strong> Real-time profit/loss calculations</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-primary font-bold">•</span>
+                  <span><strong>Market News:</strong> Curated news affecting your portfolio</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-primary font-bold">•</span>
+                  <span><strong>52-Week Analysis:</strong> Highs & lows tracking</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-primary font-bold">•</span>
+                  <span><strong>AI Alerts:</strong> Get notified about high-confidence predictions</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-orange-500/5 to-red-500/5 border border-orange-400/20">
+              <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">How It Works</h3>
+              <ol className="space-y-3 md:space-y-4 text-sm md:text-base text-muted-foreground">
+                <li className="flex gap-3 items-start">
+                  <span className="font-bold text-primary bg-primary/10 h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0">1</span>
+                  <span><strong>Sign Up:</strong> Register with your email or Google account</span>
+                </li>
+                <li className="flex gap-3 items-start">
+                  <span className="font-bold text-primary bg-primary/10 h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0">2</span>
+                  <span><strong>Get Virtual Capital:</strong> Start with ₹10,00,000 virtual currency</span>
+                </li>
+                <li className="flex gap-3 items-start">
+                  <span className="font-bold text-primary bg-primary/10 h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0">3</span>
+                  <span><strong>Explore Market:</strong> Browse stocks, check AI predictions, and analyze charts</span>
+                </li>
+                <li className="flex gap-3 items-start">
+                  <span className="font-bold text-primary bg-primary/10 h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0">4</span>
+                  <span><strong>Place Trades:</strong> Buy/Sell stocks and trade options with no real risk</span>
+                </li>
+                <li className="flex gap-3 items-start">
+                  <span className="font-bold text-primary bg-primary/10 h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0">5</span>
+                  <span><strong>Learn & Improve:</strong> Track your P&L, learn from mistakes, and refine your strategy</span>
+                </li>
+              </ol>
+            </div>
           </div>
         </div>
 

@@ -74,10 +74,15 @@ export function Header({ isLandingPage = false }: { isLandingPage?: boolean }) {
     )}>
       <div className="container mx-auto px-3 md:px-3 py-3 md:py-3">
         <div className="flex items-center gap-2 md:gap-4">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link href="/">
-              <img src="/banknifty-logo.svg" alt="Stock Market Logo" className="h-6 w-6 md:h-8 md:w-8 object-contain transition-transform hover:scale-110 duration-300" />
+          {/* Logo with Text */}
+          <div className="flex-shrink-0 flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <div className="relative h-8 w-8 md:h-10 md:w-10 flex items-center justify-center">
+                <img src="/stockai-logo.png" alt="StockAI" className="h-full w-full object-contain" onError={(e) => { e.currentTarget.src = '/stockai-logo.svg' }} />
+              </div>
+              <span className="hidden sm:inline text-sm md:text-base font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                StockAI
+              </span>
             </Link>
           </div>
 
@@ -134,47 +139,51 @@ export function Header({ isLandingPage = false }: { isLandingPage?: boolean }) {
               </div>
               
               {/* Mobile Navigation Buttons - under search */}
-              <div className="flex items-center gap-0.5 md:hidden justify-center flex-wrap w-full mt-1">
-                <Link href="/portfolio" className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full h-9 text-xs border border-blue-400/50 bg-blue-500/10 text-blue-600 font-semibold hover:bg-blue-500/20">
-                    <div className="flex items-center justify-center gap-2">
-                      <Briefcase className="h-4 w-4 text-blue-500" />
-                      <span>Portfolio</span>
-                    </div>
-                  </Button>
-                </Link>
-                <Link href="/options" className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full h-9 text-xs border border-cyan-400/50 bg-cyan-500/10 text-cyan-600 font-semibold hover:bg-cyan-500/20">
-                    <div className="flex items-center justify-center gap-2">
-                      <BarChart3 className="h-4 w-4 text-cyan-500" />
-                      <span>Option</span>
-                    </div>
-                  </Button>
-                </Link>
+              <div className="flex items-center gap-0.5 md:hidden justify-between w-full mt-1">
+                {/* Left section - Main buttons */}
+                <div className="flex gap-0.5 flex-1">
+                  <Link href="/portfolio" className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full h-9 text-xs border border-blue-400/50 bg-blue-500/10 text-blue-600 font-semibold hover:bg-blue-500/20">
+                      <div className="flex items-center justify-center gap-2">
+                        <Briefcase className="h-4 w-4 text-blue-500" />
+                        <span>Portfolio</span>
+                      </div>
+                    </Button>
+                  </Link>
+                  <Link href="/options" className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full h-9 text-xs border border-cyan-400/50 bg-cyan-500/10 text-cyan-600 font-semibold hover:bg-cyan-500/20">
+                      <div className="flex items-center justify-center gap-2">
+                        <BarChart3 className="h-4 w-4 text-cyan-500" />
+                        <span>Option</span>
+                      </div>
+                    </Button>
+                  </Link>
+                </div>
 
-                <Link href="/about" className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full h-9 text-xs border border-green-400/50 bg-green-500/10 text-green-600 font-semibold hover:bg-green-500/20">
-                    <div className="flex items-center justify-center gap-2">
-                      <Info className="h-4 w-4 text-green-500" />
-                      <span>About</span>
+                {/* Right section - Predictions and About */}
+                <div className="flex gap-0.5 flex-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 relative overflow-hidden group h-9 text-xs border bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-blue-600/20 border-purple-400/50 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 rounded-md"
+                    onClick={() => router.push('/predictions')}
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      <Sparkles className="h-3 w-3 text-purple-500 animate-spin transition-all duration-300" />
+                      <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-semibold group-hover:from-purple-500 group-hover:to-pink-500 transition-all duration-300">
+                        Predictions
+                      </span>
                     </div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-md"></div>
+                    <div className="absolute top-1 right-1 h-1 w-1 bg-yellow-400 rounded-full animate-ping opacity-60 group-hover:opacity-100"></div>
                   </Button>
-                </Link>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 relative overflow-hidden group h-9 text-xs border bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-blue-600/20 border-purple-400/50 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 rounded-md"
-                  onClick={() => router.push('/predictions')}
-                >
-                  <div className="flex items-center justify-center gap-1">
-                    <Sparkles className="h-3 w-3 text-purple-500 animate-spin transition-all duration-300" />
-                    <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-semibold group-hover:from-purple-500 group-hover:to-pink-500 transition-all duration-300">
-                      Predictions
-                    </span>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-md"></div>
-                  <div className="absolute top-1 right-1 h-1 w-1 bg-yellow-400 rounded-full animate-ping opacity-60 group-hover:opacity-100"></div>
-                </Button>
+
+                  <Link href="/about" className="flex-shrink-0">
+                    <Button variant="outline" size="sm" className="h-9 w-9 p-0 text-xs border border-green-400/50 bg-green-500/10 text-green-600 font-semibold hover:bg-green-500/20 rounded-md flex items-center justify-center">
+                      <Info className="h-4 w-4 text-green-500" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           )}

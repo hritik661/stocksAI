@@ -17,7 +17,7 @@ export function CTASection() {
             Ready to Master the Markets?
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground mb-8 md:mb-12">
-            Join thousands of traders using Hritik Stocks to make smarter trading decisions with AI insights and professional tools.
+            Join thousands of traders using StockAI to make smarter trading decisions with advanced AI insights and professional tools.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-between">

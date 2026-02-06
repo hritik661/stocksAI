@@ -22,7 +22,14 @@ export async function GET(request: NextRequest) {
     if (!rows || rows.length === 0) return NextResponse.json({ success: false }, { status: 401 })
 
     const u = rows[0]
-    return NextResponse.json({ success: true, user: { id: u.id, email: u.email, name: u.name, balance: Number(u.balance || 0), isPredictionPaid: !!u.is_prediction_paid } })
+    const response = NextResponse.json({ success: true, user: { id: u.id, email: u.email, name: u.name, balance: Number(u.balance || 0), isPredictionPaid: !!u.is_prediction_paid } })
+    
+    // CRITICAL: Force no-cache to always get fresh data from DB
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    
+    return response
   } catch (err) {
     console.error("/api/auth/me error:", err)
     return NextResponse.json({ success: false, error: err instanceof Error ? err.message : String(err) }, { status: 500 })

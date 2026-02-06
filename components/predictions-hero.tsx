@@ -5,7 +5,12 @@ import React, { useState } from 'react';
 import { useAuth } from "@/contexts/auth-context"
 
 
-const handlePredictionClick = async (showModal: (value: boolean) => void) => {
+const handlePredictionClick = async (
+  showModal: (value: boolean) => void,
+  markPredictionsAsPaid?: () => void,
+  setUserFromData?: (user: any) => void,
+  currentUser?: any
+) => {
   // Directly initiate payment without showing modal first
   try {
     // Check session from backend
@@ -32,16 +37,37 @@ const handlePredictionClick = async (showModal: (value: boolean) => void) => {
           await new Promise(resolve => setTimeout(resolve, 2000));
           // Verify payment and redirect
           try {
-            const verifyRes = await fetch('/api/auth/me')
+            const verifyRes = await fetch(`/api/auth/me?t=${Date.now()}`, { cache: 'no-store' })
             if (verifyRes.ok) {
               const userData = await verifyRes.json()
               if (userData?.user?.isPredictionPaid) {
-                // Payment successful - redirect to predictions
+                // Payment successful - update auth and redirect
+                if (markPredictionsAsPaid) markPredictionsAsPaid()
+                if (setUserFromData && userData.user) setUserFromData(userData.user)
                 window.location.href = '/predictions?from=payment&success=true'
-              } else {
-                alert('Payment verification in progress. Please refresh the page.')
-                window.location.href = '/predictions'
+                return
               }
+
+              // If running locally the webhook may not be reachable. Provide a local fallback:
+              const hostname = typeof window !== 'undefined' ? window.location.hostname : ''
+              if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                // mark user locally as having access so predictions show immediately in dev
+                try {
+                  if (setUserFromData) {
+                    const patchedUser = { ...(currentUser || {}), isPredictionPaid: true }
+                    setUserFromData(patchedUser)
+                  }
+                  try { localStorage.setItem('predictions_access', 'true') } catch {}
+                  // redirect back to predictions and show list
+                  window.location.href = '/predictions?from=payment&success=true&local=true'
+                  return
+                } catch (e) {
+                  // fallback to normal redirect
+                }
+              }
+
+              alert('Payment verification in progress. Please refresh the page.')
+              window.location.href = '/predictions'
             }
           } catch (e) {
             alert('Payment verification failed. Redirecting to predictions...');
@@ -59,7 +85,8 @@ const handlePredictionClick = async (showModal: (value: boolean) => void) => {
 
 export default function PredictionsHero() {
   const [showSuccess, setShowSuccess] = useState(false)
-  const { markPredictionsAsPaid } = useAuth()
+  const [showModal, setShowModal] = useState(false)
+  const { markPredictionsAsPaid, setUserFromData, user } = useAuth()
 
   // Auto-redirect after showing success message
   React.useEffect(() => {
@@ -96,36 +123,59 @@ export default function PredictionsHero() {
           </div>
         </div>
 
-        {/* Smaller Payment Button */}
-        <div className="mb-4 sm:mb-6">
+        {/* Smaller Payment Button with Revert Option */}
+        <div className="mb-4 sm:mb-6 flex gap-3 flex-wrap">
           <button
             className="bg-primary text-white px-4 py-2 sm:px-8 sm:py-3 rounded-lg sm:rounded-xl font-bold shadow-lg hover:bg-primary/80 transition text-base sm:text-lg"
-            onClick={() => handlePredictionClick(setShowModal)}
+            onClick={() => handlePredictionClick(setShowModal, markPredictionsAsPaid, setUserFromData, user)}
           >
             Access Predictions (Pay to Continue)
+          </button>
+          <button
+            className="bg-red-600/80 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl font-bold shadow-lg hover:bg-red-700 transition text-base sm:text-lg"
+            onClick={async () => {
+              try {
+                const res = await fetch('/api/predictions/revert-payment', { 
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' }
+                })
+                if (res.ok) {
+                  const data = await res.json()
+                  alert('Payment has been reverted. Please make a new payment to access predictions.')
+                  window.location.href = '/predictions'
+                } else {
+                  const err = await res.json()
+                  alert(err.error || 'Failed to revert payment')
+                }
+              } catch (err) {
+                alert('Error reverting payment. Please try again.')
+              }
+            }}
+          >
+            Revert Payment
           </button>
         </div>
 
         {/* Success Modal */}
         {showSuccess && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 animate-in fade-in">
-            <div className="bg-card border-2 border-green-500/60 rounded-lg max-w-xs w-full shadow-xl animate-in zoom-in-95">
+            <div className="bg-card border-2 border-emerald-600/60 rounded-lg max-w-xs w-full shadow-xl animate-in zoom-in-95">
               <div className="p-3 sm:p-4 text-center space-y-2 sm:space-y-2.5">
                 {/* Success Icon */}
                 <div className="flex justify-center">
-                  <div className="h-12 w-12 rounded-full bg-green-500/20 border-2 border-green-500 flex items-center justify-center animate-bounce">
-                    <Check className="h-6 w-6 text-green-500" />
+                  <div className="h-12 w-12 rounded-full bg-emerald-700/20 border-2 border-emerald-600 flex items-center justify-center animate-bounce">
+                    <Check className="h-6 w-6 text-emerald-400" />
                   </div>
                 </div>
 
                 {/* Success Message */}
                 <div className="space-y-1 animate-slide-in-up">
-                  <h2 className="text-xl sm:text-2xl font-bold text-green-500">🎉 Success!</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-emerald-400">🎉 Success!</h2>
                   <p className="text-xs sm:text-sm text-muted-foreground">Payment processed.</p>
                 </div>
 
                 {/* Success Details */}
-                <div className="bg-green-500/10 border border-green-500/30 rounded-md p-2 sm:p-2.5 space-y-1 animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
+                <div className="bg-emerald-700/15 border border-emerald-600/40 rounded-md p-2 sm:p-2.5 space-y-1 animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
                   <p className="text-[10px] font-bold text-foreground">✅ Lifetime Access</p>
                   <p className="text-[10px] text-muted-foreground">Enjoy all predictions forever</p>
                 </div>

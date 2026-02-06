@@ -168,6 +168,25 @@ export default function OptionsPage() {
             if (typeof data.marketOpen === 'boolean') {
               setMarketOpen(data.marketOpen)
             }
+            
+            // IMPORTANT: Store current prices for all strikes to ensure P&L calculations work
+            // This ensures P&L displays correctly even when market is closed
+            if (user && data.marketOpen) {
+              data.strikes.forEach((strike: OptionStrike) => {
+                // Store CE price
+                if (strike.cePrice > 0) {
+                  try {
+                    storeLastTradingPrice(user.email, `${selectedIndex.symbol}-${strike.strike}-CE`, strike.cePrice)
+                  } catch {}
+                }
+                // Store PE price
+                if (strike.pePrice > 0) {
+                  try {
+                    storeLastTradingPrice(user.email, `${selectedIndex.symbol}-${strike.strike}-PE`, strike.pePrice)
+                  } catch {}
+                }
+              })
+            }
           }
         } else {
           console.error("Failed to fetch option chain")
@@ -183,7 +202,7 @@ export default function OptionsPage() {
     // Only update every 10 seconds if market is open, otherwise every 60 seconds
     const interval = setInterval(fetchOptionChain, marketOpen ? 10000 : 60000)
     return () => clearInterval(interval)
-  }, [selectedIndex.symbol, selectedIndex.strikeGap, marketOpen])
+  }, [selectedIndex.symbol, selectedIndex.strikeGap, marketOpen, user])
 
   // Fetch option chains for all indices with open positions - refresh periodically
   useEffect(() => {
@@ -208,6 +227,25 @@ export default function OptionsPage() {
                   ...prev,
                   [index]: data.strikes,
                 }))
+                
+                // IMPORTANT: Store current prices for all strikes to ensure P&L calculations work
+                // This ensures that when market closes, we have last trading prices saved
+                if (user && marketOpen) {
+                  data.strikes.forEach((strike: OptionStrike) => {
+                    // Store CE price
+                    if (strike.cePrice > 0) {
+                      try {
+                        storeLastTradingPrice(user.email, `${index}-${strike.strike}-CE`, strike.cePrice)
+                      } catch {}
+                    }
+                    // Store PE price
+                    if (strike.pePrice > 0) {
+                      try {
+                        storeLastTradingPrice(user.email, `${index}-${strike.strike}-PE`, strike.pePrice)
+                      } catch {}
+                    }
+                  })
+                }
               }
             }
           } catch (error) {
@@ -223,7 +261,7 @@ export default function OptionsPage() {
     fetchAllChainsForPositions()
     const interval = setInterval(fetchAllChainsForPositions, marketOpen ? 10000 : 60000)
     return () => clearInterval(interval)
-  }, [positions, marketOpen])
+  }, [positions, marketOpen, user])
 
   const handleOptionClick = (type: "CE" | "PE", strike: number, price: number) => {
     try {
@@ -558,23 +596,57 @@ export default function OptionsPage() {
                         // Check if market is open
                         const marketStatus = isMarketOpen()
                         
-                        // Get current price from strikes for this position's index
-                        // BUT only if market is open - when market is closed, use entry price
-                        let currentPrice = pos.price // Default to entry price
+                        // Get current price for this position:
+                        // 1. Try live prices from API (strikesByIndex or strikes)
+                        // 2. Fall back to last trading price
+                        // 3. Fall back to entry price (worst case)
+                        let currentPrice = pos.price // Default to entry price as fallback
                         
+                        // Try to get live price from strike data
+                        let foundLivePrice = false
                         if (marketStatus.isOpen) {
-                          // Market is OPEN - fetch live prices from API
-                          const positionStrikes = strikesByIndex[pos.index] || []
-                          const strike = positionStrikes.find((s) => s.strike === pos.strike)
-                          if (strike) {
-                            currentPrice = pos.type === "CE" ? strike.cePrice : strike.pePrice
+                          // Check strikesByIndex first (for non-selected indices)
+                          const positionStrikes = strikesByIndex[pos.index]
+                          if (positionStrikes && Array.isArray(positionStrikes)) {
+                            const strike = positionStrikes.find((s) => s.strike === pos.strike)
+                            if (strike && typeof strike[pos.type === "CE" ? "cePrice" : "pePrice"] === "number") {
+                              currentPrice = pos.type === "CE" ? strike.cePrice : strike.pePrice
+                              foundLivePrice = true
+                            }
+                          }
+                          
+                          // If not found in strikesByIndex, check main strikes array (for selected index)
+                          if (!foundLivePrice && pos.index === selectedIndex.symbol) {
+                            const mainStrike = strikes.find((s) => s.strike === pos.strike)
+                            if (mainStrike && typeof mainStrike[pos.type === "CE" ? "cePrice" : "pePrice"] === "number") {
+                              currentPrice = pos.type === "CE" ? mainStrike.cePrice : mainStrike.pePrice
+                              foundLivePrice = true
+                            }
                           }
                         }
-                        // If market is CLOSED, currentPrice stays as pos.price (entry price) -> P&L = 0
+                        
+                        // If we couldn't find live price, try last trading price
+                        if (!foundLivePrice && user) {
+                          const strikeKey = `${pos.index}-${pos.strike}-${pos.type}`
+                          const lastTradingPrice = getLastTradingPrice(user.email, strikeKey)
+                          if (lastTradingPrice && !isNaN(lastTradingPrice) && lastTradingPrice > 0) {
+                            currentPrice = lastTradingPrice
+                            foundLivePrice = true
+                          }
+                        }
+                        
+                        // If still no price found and market is open, use entry price but store it as last trading price for consistency
+                        if (!foundLivePrice && marketStatus.isOpen && user) {
+                          // Store entry price as last trading price for future calculations
+                          try { 
+                            storeLastTradingPrice(user.email, `${pos.index}-${pos.strike}-${pos.type}`, pos.price) 
+                          } catch {}
+                          currentPrice = pos.price
+                        }
 
                         // Calculate P&L using proper options calculator
-                        // When market closed: P&L = 0 (since currentPrice = entryPrice)
-                        // When market open: P&L = actual calculation based on live prices
+                        // P&L = (currentPrice - entryPrice) × quantity × lotSize for BUY
+                        // P&L = (entryPrice - currentPrice) × quantity × lotSize for SELL
                         const pnl = calculateOptionsPnL(pos.price, currentPrice, pos.action, pos.quantity, pos.lotSize)
                         const pnlPercent = calculateOptionsPnLPercent(pos.price, currentPrice, pos.action)
                         const pnlSign = pnl >= 0

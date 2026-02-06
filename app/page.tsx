@@ -1,6 +1,7 @@
 "use client"
 
 import dynamic from "next/dynamic"
+import Link from "next/link"
 import { Header } from "@/components/header"
 import { MarketStatus } from "@/components/market-status"
 import { IndicesTicker } from "@/components/indices-ticker"
@@ -73,12 +74,30 @@ export default function HomePage() {
                   Market Dashboard
                 </h1>
                 <p className="text-muted-foreground text-sm md:text-sm font-medium">
-                  Managing <span className="text-primary font-bold">₹{user.balance.toLocaleString("en-IN")}</span> • Ready to trade
+                  Managing <span className="text-primary font-bold">₹{user.balance.toLocaleString("en-IN")}</span> • <span className="text-emerald-500">Ready to trade</span>
                 </p>
               </div>
               <div className="flex items-center gap-2 md:gap-2 glass-morphism px-3 md:px-4 py-2 md:py-2.5 rounded-xl animate-scale-bounce">
                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Market</span>
                 <MarketStatus />
+              </div>
+            </div>
+
+            {/* Welcome Banner */}
+            <div className="p-4 md:p-6 rounded-2xl bg-gradient-to-r from-primary/10 via-accent/5 to-primary/5 border border-primary/20 md:border-border/50">
+              <div className="flex gap-3 md:gap-4">
+                <div className="flex-1">
+                  <h2 className="font-bold text-base md:text-lg mb-1 md:mb-2">Welcome to Stocks AI!</h2>
+                  <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">Trade stocks and options with real market data, AI predictions, and professional tools. Start building your trading skills today!</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Link href="/predictions" className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-colors">
+                      📊 View AI Predictions
+                    </Link>
+                    <Link href="/about" className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors">
+                      ℹ️ Learn More
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
 

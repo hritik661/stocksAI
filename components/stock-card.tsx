@@ -40,7 +40,7 @@ export function StockCard({ stock, chartData, hideLogo, largeCard, noBox }: Stoc
                   className={`flex items-center gap-0.5 text-[9px] md:text-[10px] px-1 py-0.5 rounded-lg font-semibold
                     ${
                       isPositive
-                        ? "bg-green-500/30 text-green-500 border border-green-500/60"
+                        ? "bg-emerald-700/40 text-emerald-400 border border-emerald-600/80"
                         : "bg-red-500/20 text-red-500 border border-red-500/30"
                     }`}
                 >
@@ -72,7 +72,7 @@ export function StockCard({ stock, chartData, hideLogo, largeCard, noBox }: Stoc
               </p>
               <p
                 className={`text-[11px] md:text-sm font-semibold flex items-center gap-1 ${
-                  isPositive ? "text-green-500" : "text-red-500"
+                  isPositive ? "text-emerald-400" : "text-red-500"
                 }`}
               >
                 {isPositive ? "+" : ""}

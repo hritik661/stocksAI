@@ -503,7 +503,7 @@ export function PredictionsList() {
               </div>
               <div className="text-right">
                 <div className="font-mono font-bold text-base md:text-lg">₹{stock.price ? stock.price.toLocaleString("en-IN") : "0"}</div>
-                <div className={`text-xs md:text-sm font-bold px-2.5 py-1.5 md:px-3 md:py-1.5 rounded-md ${stock.change >= 0 ? "text-green-800 bg-green-800/10 border border-green-800/20 font-extrabold" : "text-red-600 bg-red-50 border border-red-300"}`}>
+                <div className={`text-xs md:text-sm font-bold px-2.5 py-1.5 md:px-3 md:py-1.5 rounded-md ${stock.change >= 0 ? "text-green-950 bg-green-600/30 border border-green-700/60 font-extrabold" : "text-red-600 bg-red-50 border border-red-300"}`}>
                   {stock.change >= 0 ? "+" : ""}
                   {(stock.changePercent || 0).toFixed(2)}%
                 </div>

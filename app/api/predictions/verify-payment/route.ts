@@ -6,8 +6,11 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const orderId = searchParams.get('order_id');
+    const origin = process.env.NEXT_PUBLIC_APP_ORIGIN || 'https://hritik.vercel.app';
+    
     if (!orderId) {
-      return NextResponse.redirect(new URL('/predictions?error=missing_order', request.url));
+      console.log('✅ [VERIFY-PAYMENT] Missing order_id, redirecting to predictions');
+      return NextResponse.redirect(`${origin}/predictions?error=missing_order&t=${Date.now()}`);
     }
 
     const databaseUrl = process.env.DATABASE_URL!;
@@ -16,17 +19,28 @@ export async function GET(request: Request) {
     const orderRows = await sql`
       SELECT status, user_id FROM payment_orders WHERE order_id = ${orderId}
     `;
-    if (!orderRows.length || orderRows[0].status !== 'paid') {
-      return NextResponse.redirect(new URL('/predictions?error=payment_not_verified', request.url));
+    
+    if (!orderRows.length) {
+      console.log('⚠️ [VERIFY-PAYMENT] Order not found:', orderId);
+      return NextResponse.redirect(`${origin}/predictions?error=order_not_found&t=${Date.now()}`);
+    }
+    
+    if (orderRows[0].status !== 'paid') {
+      console.log('⚠️ [VERIFY-PAYMENT] Payment not verified for order:', orderId, 'Status:', orderRows[0].status);
+      return NextResponse.redirect(`${origin}/predictions?error=payment_not_verified&t=${Date.now()}`);
     }
 
     // Grant access (already handled by webhook, but double-check)
+    const userId = orderRows[0].user_id;
     await sql`
-      UPDATE users SET is_prediction_paid = true WHERE id = ${orderRows[0].user_id}
+      UPDATE users SET is_prediction_paid = true WHERE id = ${userId}
     `;
-
-    return NextResponse.redirect(new URL('/predictions?success=paid', request.url));
+    
+    console.log('✅ [VERIFY-PAYMENT] Payment verified for user:', userId, 'Order:', orderId);
+    return NextResponse.redirect(`${origin}/predictions?success=paid&t=${Date.now()}`);
   } catch (error) {
-    return NextResponse.redirect(new URL('/predictions?error=verify_failed', request.url));
+    console.error('❌ [VERIFY-PAYMENT] Error:', error);
+    const origin = process.env.NEXT_PUBLIC_APP_ORIGIN || 'https://hritik.vercel.app';
+    return NextResponse.redirect(`${origin}/predictions?error=verify_failed&t=${Date.now()}`);
   }
 }

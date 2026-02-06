@@ -237,35 +237,36 @@ export default function PortfolioPage() {
         
         // Check market status first
         const marketStatus = isMarketOpen()
-        
-        // When market is closed, use avgPrice as the reference point for P&L
-        // This ensures that newly bought stocks show 0 P&L until market opens and fetches real prices
+        const lastPrices = getLastPrices()
         
         // Determine effective price for P&L calculation:
         // - If market is OPEN and we have a valid price: use current market price
-        // - If market is CLOSED: use avgPrice (entry price) to show 0 P&L until market opens
+        // - If market is CLOSED: use LAST TRADING PRICE (stored closing price) for persistent P&L
+        // - If neither available: use entry price as fallback
         let effectivePrice = holding.avgPrice
+        
         if (marketStatus.isOpen && currentMarketPrice && !isNaN(currentMarketPrice) && currentMarketPrice > 0) {
           // Market is open and we have a valid current price
           effectivePrice = currentMarketPrice
-        }
-        
-        // Store the current market price when market is open
-        // This will be used as reference for next market close
-        if (marketStatus.isOpen && currentMarketPrice && !isNaN(currentMarketPrice) && currentMarketPrice > 0) {
+          // Store the current market price for use when market closes
           storeLastTradingPrice(user.email, holding.symbol, currentMarketPrice)
+        } else if (!marketStatus.isOpen && typeof lastPrices[holding.symbol] === 'number' && lastPrices[holding.symbol] > 0) {
+          // Market is closed: use last trading price stored from yesterday's close
+          // This ensures P&L persists even after market closes
+          effectivePrice = lastPrices[holding.symbol]
         }
         
         const safeEffectivePrice = isNaN(effectivePrice) || effectivePrice <= 0 ? holding.avgPrice : effectivePrice
         const safeAvgPrice = isNaN(holding.avgPrice) ? 0 : holding.avgPrice
         const safeQuantity = isNaN(holding.quantity) ? 0 : holding.quantity
         
-        // Portfolio value: use effective price (which respects market status)
+        // Portfolio value: use effective price (respects market status and last trading price)
         const portfolioPrice = safeEffectivePrice
         const currentValue = portfolioPrice * safeQuantity
         
         // P&L = (Effective Price - Avg Price) * Quantity
-        // When market is closed, effectivePrice = avgPrice, so P&L = 0
+        // When market is closed: uses last trading price for persistent P&L
+        // When market is open: uses live price for real-time P&L
         const pnl = calculatePnL(safeAvgPrice, safeEffectivePrice, safeQuantity)
         const pnlPercent = calculatePnLPercent(safeAvgPrice, safeEffectivePrice)
 
@@ -835,36 +836,49 @@ export default function PortfolioPage() {
                   <div className="space-y-2 md:space-y-3">
                     {positions.map((pos) => {
                       const strikeKey = `${pos.index}-${pos.strike}-${pos.type}`
-                      const lastPrices = getLastPrices()
                       
                       // Check if market is open
                       const marketStatus = isMarketOpen()
                       
-                      // When market is CLOSED: Use entry price (P&L = 0)
+                      // Determine current price based on market status:
                       // When market is OPEN: Use latest fetched price from API
+                      // When market is CLOSED: Use LAST TRADING PRICE for persistent P&L
+                      // Fallback: Use entry price if no prices available
                       let currentPrice = pos.price
                       
-                      if (marketStatus.isOpen && typeof lastPrices[strikeKey] === 'number') {
-                        // Market is open and we have a live price from API
-                        currentPrice = lastPrices[strikeKey]
+                      // Try to get price from storage functions that match options-calculator
+                      const storedLastTradingPrice = getLastTradingPrice(user.email, strikeKey)
+                      const lastPrices = getLastPrices()
+                      
+                      if (marketStatus.isOpen) {
+                        // Market is open - prefer live price, fallback to stored
+                        if (typeof lastPrices[strikeKey] === 'number' && lastPrices[strikeKey] > 0) {
+                          currentPrice = lastPrices[strikeKey]
+                        } else if (typeof storedLastTradingPrice === 'number' && storedLastTradingPrice > 0) {
+                          currentPrice = storedLastTradingPrice
+                        }
                       } else {
-                        // Market is closed or no live price available
-                        // Use entry price so P&L shows 0
-                        currentPrice = pos.price
+                        // Market is closed: use LAST TRADING PRICE for persistent P&L
+                        // This shows the P&L based on yesterday's closing price
+                        if (typeof storedLastTradingPrice === 'number' && storedLastTradingPrice > 0) {
+                          currentPrice = storedLastTradingPrice
+                        } else if (typeof lastPrices[strikeKey] === 'number' && lastPrices[strikeKey] > 0) {
+                          currentPrice = lastPrices[strikeKey]
+                        }
                       }
                       
                       // Calculate P&L using the options calculator with action and lotSize
                       const pnl = calculateOptionsPnL(
                         pos.price,
                         currentPrice,
-                        pos.action,
+                        pos.action || "BUY",
                         pos.quantity,
-                        pos.lotSize
+                        pos.lotSize || 50
                       )
                       const pnlPercent = calculateOptionsPnLPercent(
                         pos.price,
                         currentPrice,
-                        pos.action
+                        pos.action || "BUY"
                       )
 
                       return (

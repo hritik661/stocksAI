@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { useBalance } from "@/hooks/use-balance"
 import type { StockQuote } from "@/lib/yahoo-finance"
 import { formatCurrency } from "@/lib/market-utils"
+import { storeLastTradingPrice } from "@/lib/pnl-calculator"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -150,6 +151,13 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
     transactions.push(transaction)
     localStorage.setItem(transactionsKey, JSON.stringify(transactions))
 
+    // Store the last trading price for persistent P&L after market closes
+    try {
+      storeLastTradingPrice(user.email, stock.symbol, stock.regularMarketPrice)
+    } catch (error) {
+      console.warn("Failed to store last trading price:", error)
+    }
+
     toast({
       title: "Order Placed Successfully",
       description: `Bought ${qty} shares of ${stock.symbol.replace(".NS", "")} at ${formatCurrency(stock.regularMarketPrice)}`,
@@ -264,6 +272,13 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
     }
     transactions.push(transaction)
     localStorage.setItem(transactionsKey, JSON.stringify(transactions))
+
+    // Store the last trading price for persistent P&L after market closes
+    try {
+      storeLastTradingPrice(user.email, stock.symbol, stock.regularMarketPrice)
+    } catch (error) {
+      console.warn("Failed to store last trading price:", error)
+    }
 
     toast({
       title: "Order Placed Successfully",

@@ -91,50 +91,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
 
   const logout = () => {
-    console.log('🔐 [LOGOUT] Starting immediate logout...')
+    console.log('🔐 [LOGOUT] Starting logout flow...')
     
-    // IMMEDIATE: Clear local state first (this updates UI instantly)
+    // IMMEDIATE: Clear local state (updates UI instantly)
+    console.log('🔐 [LOGOUT] Clearing user state from React context')
     setUser(null)
-    console.log('✅ [LOGOUT] User state cleared immediately')
     
     // IMMEDIATE: Clear all storage
     try {
       if (typeof window !== "undefined") {
+        console.log('🔐 [LOGOUT] Clearing localStorage, sessionStorage, and cookies')
         localStorage.clear()
         sessionStorage.clear()
-        // Also clear cookies on client-side
+        
+        // Clear all cookies
         document.cookie.split(";").forEach((c) => {
           const eqPos = c.indexOf("=")
           const name = eqPos > -1 ? c.substr(0, eqPos).trim() : c.trim()
-          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;`
+          if (name) {
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;`
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;domain=${window.location.hostname};path=/;`
+          }
         })
-        console.log('✅ [LOGOUT] Storage and cookies cleared immediately')
+        console.log('✅ [LOGOUT] All storage and cookies cleared')
       }
     } catch (err) {
-      console.error('❌ [LOGOUT] Storage clear error:', err)
+      console.error('❌ [LOGOUT] Storage clear failed:', err)
     }
     
-    // IMMEDIATE: Redirect to home page FIRST
-    try {
-      if (typeof window !== "undefined") {
-        console.log('🔄 [LOGOUT] Redirecting to home page immediately...')
-        // Use setTimeout to ensure state is updated before redirect
-        setTimeout(() => {
-          window.location.href = "/"
-        }, 50)
-      }
-    } catch (err) {
-      console.error('❌ [LOGOUT] Redirect error:', err)
-    }
+    // IMMEDIATE: Use router.push (Next.js client-side navigation)
+    // This is more reliable than window.location.href for Next.js apps
+    console.log('🔄 [LOGOUT] Navigating to home page via Next.js router')
+    router.push('/')
     
-    // BACKGROUND: Call logout API (fire and forget - don't wait for it)
+    // BACKGROUND: Call logout API to clear server-side session
     ;(async () => {
       try {
-        console.log('🔐 [LOGOUT] Calling logout API in background...')
-        await fetch("/api/auth/logout", { method: "POST" })
-        console.log('✅ [LOGOUT] API logout completed in background')
+        console.log('🔐 [LOGOUT] Calling logout API to clear server session')
+        const res = await fetch("/api/auth/logout", { method: "POST" })
+        if (res.ok) {
+          console.log('✅ [LOGOUT] Server session cleared successfully')
+        } else {
+          console.warn('⚠️ [LOGOUT] Server logout returned:', res.status)
+        }
       } catch (err) {
-        console.error('❌ [LOGOUT] API logout error (background):', err)
+        console.error('❌ [LOGOUT] Server logout failed:', err)
       }
     })()
   }

@@ -38,7 +38,7 @@ export function WhyChooseSection() {
         {/* Header */}
         <div className="max-w-3xl mx-auto text-center mb-12 md:mb-16 lg:mb-20 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground mb-4 md:mb-6">
-            Why Choose Hritik Stocks?
+            Why Choose Stocks AI?
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground">
             The only platform combining AI predictions, professional trading tools, and community insights
