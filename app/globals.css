@@ -359,16 +359,6 @@ input[type=number]::-ms-expand {
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
-  0% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-  }
-}
 
 @keyframes text-gradient-rainbow {
   0% {

@@ -112,10 +112,10 @@ export default function PredictionsHero() {
       <div className="absolute bottom-0 left-0 w-32 h-32 sm:w-60 sm:h-60 md:w-80 md:h-80 bg-accent/10 rounded-full blur-2xl -ml-8 -mb-8 sm:-ml-24 sm:-mb-24 md:-ml-32 md:-mb-32 opacity-30" />
 
       <div className="relative z-10">
-        {/* Smaller Header */}
+        {/* Smaller Header - Increased Logo Size */}
           <div className="flex items-center gap-3 sm:gap-5 mb-4 sm:mb-6">
-          <div className="h-10 w-10 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center shrink-0">
-            <Zap className="h-6 w-6 sm:h-10 sm:w-10 text-primary animate-pulse" />
+          <div className="h-12 w-12 sm:h-20 sm:w-20 md:h-24 md:w-24 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center shrink-0">
+            <Zap className="h-7 w-7 sm:h-12 sm:w-12 md:h-14 md:w-14 text-primary animate-pulse" />
           </div>
           <div>
             <h2 className="text-base sm:text-2xl font-extrabold text-foreground mb-1 sm:mb-2">AI-Powered Stock Predictions</h2>
@@ -124,15 +124,15 @@ export default function PredictionsHero() {
         </div>
 
         {/* Smaller Payment Button with Revert Option */}
-        <div className="mb-4 sm:mb-6 flex gap-3 flex-wrap">
+        <div className="mb-4 sm:mb-6 flex gap-2 sm:gap-3 flex-wrap">
           <button
-            className="bg-primary text-white px-4 py-2 sm:px-8 sm:py-3 rounded-lg sm:rounded-xl font-bold shadow-lg hover:bg-primary/80 transition text-sm sm:text-lg"
+            className="bg-primary text-white px-3 py-1 sm:px-8 sm:py-3 rounded-lg sm:rounded-xl font-bold shadow-lg hover:bg-primary/80 transition text-xs sm:text-lg"
             onClick={() => handlePredictionClick(setShowModal, markPredictionsAsPaid, setUserFromData, user)}
           >
             Access Predictions (Pay to Continue)
           </button>
           <button
-            className="bg-red-600/80 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl font-bold shadow-lg hover:bg-red-700 transition text-base sm:text-lg"
+            className="bg-red-600/80 text-white px-3 py-1 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl font-bold shadow-lg hover:bg-red-700 transition text-xs sm:text-lg"
             onClick={async () => {
               try {
                 const res = await fetch('/api/predictions/revert-payment', { 
@@ -200,8 +200,8 @@ export default function PredictionsHero() {
           </div>
         )}
 
-        {/* Smaller Stats Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+        {/* Stats Row - No background on laptop, smaller on mobile */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
           {[ 
             { icon: Brain, label: "AI Models", value: "50+" },
             { icon: TrendingUp, label: "Accuracy", value: "85%+" },
@@ -210,11 +210,11 @@ export default function PredictionsHero() {
           ].map((item, idx) => {
             const Icon = item.icon
             return (
-              <div key={idx} className="glass-morphism rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2 sm:gap-4">
-                <Icon className="h-5 w-5 sm:h-7 sm:w-7 text-primary shrink-0" />
+              <div key={idx} className="md:bg-transparent sm:glass-morphism rounded-lg sm:rounded-xl md:rounded-2xl p-2 sm:p-4 md:p-4 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <Icon className="h-4 w-4 sm:h-6 sm:w-6 md:h-7 md:w-7 text-primary shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-[11px] sm:text-sm md:text-base text-muted-foreground leading-tight">{item.label}</p>
-                  <p className="font-bold text-sm sm:text-base md:text-lg text-gradient leading-tight">{item.value}</p>
+                  <p className="text-[9px] sm:text-xs md:text-sm text-muted-foreground leading-tight">{item.label}</p>
+                  <p className="font-bold text-xs sm:text-sm md:text-base text-gradient leading-tight">{item.value}</p>
                 </div>
               </div>
             )

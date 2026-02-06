@@ -46,7 +46,7 @@ export function WhyChooseSection() {
         </div>
 
         {/* Reasons Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12 md:mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12 md:mb-16">
           {reasons.map((reason, idx) => {
             const Icon = reason.icon
             return (
@@ -75,7 +75,7 @@ export function WhyChooseSection() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-3 md:grid-cols-3 gap-4 md:gap-6">
           {[
             { stat: "50+", label: "Nifty Stocks", desc: "Tracked with AI" },
             { stat: "85%+", label: "Prediction Accuracy", desc: "Proven results" },

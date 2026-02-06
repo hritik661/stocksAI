@@ -10,20 +10,26 @@ export function HeroSection() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
       {/* Removed background circles */}
-      <div className="relative z-10 container mx-auto px-4 md:px-6 py-16 md:py-24 lg:py-32 flex flex-col items-center justify-center">
-        {/* StockAI Logo - Professional Floating Design */}
-        <div className="mb-12 md:mb-16 flex justify-center">
-          <img 
-            src={LOGOS.main}
-            alt="StockAI" 
-            className="h-48 md:h-64 w-auto object-contain" 
-            style={{ 
-              mixBlendMode: 'screen',
-              filter: 'brightness(1.2) contrast(1.1)',
-              backgroundColor: 'transparent'
-            }}
-            onError={(e) => { e.currentTarget.src = LOGOS.fallback[0] }} 
-          />
+      <div className="relative z-10 container mx-auto px-4 md:px-6 py-4 md:py-6 lg:py-8 flex flex-col items-center justify-center">
+        {/* StockAI Logo - Professional Design with Glow */}
+        <div className="mb-1 md:mb-2 flex justify-center px-4">
+          <div className="relative">
+            {/* Glow effect behind logo */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 blur-2xl rounded-full animate-pulse" style={{ filter: 'blur(40px)' }} />
+            
+            {/* Logo without animation */}
+            <img 
+              src={LOGOS.main}
+              alt="StockAI" 
+              className="h-48 sm:h-56 md:h-64 lg:h-72 w-auto object-contain relative z-10" 
+              style={{ 
+                mixBlendMode: 'screen',
+                filter: 'brightness(1.2) contrast(1.1)',
+                backgroundColor: 'transparent'
+              }}
+              onError={(e) => { e.currentTarget.src = LOGOS.fallback[0] }} 
+            />
+          </div>
         </div>
 
         {/* Badge */}
@@ -77,8 +83,8 @@ export function HeroSection() {
           })()}
         </div>
 
-        {/* Feature highlights - improved */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-4xl w-full">
+        {/* Feature highlights - 2 columns on mobile, 3 on desktop */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-6 max-w-4xl w-full">
           {[
             {
               icon: TrendingUp,
@@ -96,10 +102,10 @@ export function HeroSection() {
               desc: "Advanced candlestick charts, 20+ indicators, multiple timeframes",
             },
           ].map((feature, index) => (
-            <div key={index} className="p-4 md:p-6 rounded-xl bg-gradient-to-br from-card to-card/50 border border-primary/10 hover:border-primary/30 transition-all hover:shadow-lg">
-              <feature.icon className="h-8 w-8 text-primary mb-3" />
-              <h3 className="font-semibold text-sm md:text-base mb-2">{feature.title}</h3>
-              <p className="text-xs md:text-sm text-muted-foreground">{feature.desc}</p>
+            <div key={index} className="p-2 md:p-6 rounded-lg md:rounded-xl bg-gradient-to-br from-card to-card/50 border border-primary/10 hover:border-primary/30 transition-all hover:shadow-lg">
+              <feature.icon className="h-5 md:h-8 w-5 md:w-8 text-primary mb-1.5 md:mb-3" />
+              <h3 className="font-semibold text-xs md:text-base leading-tight mb-1 md:mb-2 line-clamp-2">{feature.title}</h3>
+              <p className="text-[9px] md:text-sm text-muted-foreground line-clamp-2 md:line-clamp-none">{feature.desc}</p>
             </div>
           ))}
         </div>

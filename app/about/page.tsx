@@ -32,7 +32,7 @@ export default function AboutPage() {
         <div className="mb-12 md:mb-20">
           <h2 className="text-2xl md:text-4xl font-bold text-center mb-8 md:mb-12">Why Choose Stocks?</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {[
               {
                 icon: Zap,
@@ -97,7 +97,7 @@ export default function AboutPage() {
         </div>
 
         {/* Company Info */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-12 md:mb-20">
+        <div className="grid grid-cols-3 md:grid-cols-3 gap-6 md:gap-8 mb-12 md:mb-20">
           <div className="text-center p-4 md:p-8 rounded-2xl bg-secondary/50 border border-primary/20 md:border-border">
             <div className="text-2xl md:text-4xl font-black text-primary mb-2 md:mb-3">10K+</div>
             <p className="text-muted-foreground font-medium text-sm md:text-base">Active Traders</p>
@@ -122,19 +122,9 @@ export default function AboutPage() {
           <h2 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8 text-center">About Stocks AI</h2>
           
           <div className="space-y-6 md:space-y-8">
-            <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20 md:border-border">
-              <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">What is Stock AI?</h3>
-              <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-                 Stocks AI is a revolutionary trading simulation platform designed for Indian investors and traders. We provide a risk-free environment to learn, practice, and master stock market trading with real market data, AI-powered predictions, and advanced analytics tools. Whether you're a beginner or an experienced trader, our platform empowers you to make informed trading decisions.
-              </p>
-            </div>
+           
 
-            <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-blue-500/5 to-cyan-500/5 border border-blue-400/20">
-              <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Our Mission</h3>
-              <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-                Our mission is to democratize stock market access and financial education for every Indian. We believe that everyone should have the opportunity to learn trading, test strategies, and build confidence without risking real capital. We're committed to providing institutional-grade tools at affordable prices, making professional trading accessible to retail investors.
-              </p>
-            </div>
+           
 
             <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-green-500/5 to-emerald-500/5 border border-green-400/20">
               <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Why Trade with Us?</h3>
@@ -220,35 +210,7 @@ export default function AboutPage() {
               </div>
             </div>
 
-            <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-purple-500/5 to-pink-500/5 border border-purple-400/20">
-              <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Key Features</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 text-sm md:text-base text-muted-foreground">
-                <div className="flex gap-2">
-                  <span className="text-primary font-bold">•</span>
-                  <span><strong>Stock Screening:</strong> Find trending stocks with powerful filters</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-primary font-bold">•</span>
-                  <span><strong>Technical Analysis:</strong> Candlestick charts with 20+ indicators</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-primary font-bold">•</span>
-                  <span><strong>P&L Tracking:</strong> Real-time profit/loss calculations</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-primary font-bold">•</span>
-                  <span><strong>Market News:</strong> Curated news affecting your portfolio</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-primary font-bold">•</span>
-                  <span><strong>52-Week Analysis:</strong> Highs & lows tracking</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-primary font-bold">•</span>
-                  <span><strong>AI Alerts:</strong> Get notified about high-confidence predictions</span>
-                </div>
-              </div>
-            </div>
+           
 
             <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-orange-500/5 to-red-500/5 border border-orange-400/20">
               <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">How It Works</h3>
@@ -280,11 +242,7 @@ export default function AboutPage() {
 
         {/* Team/Vision */}
         <div className="rounded-2xl md:rounded-[2rem] bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/10 p-6 md:p-12 text-center mb-12 md:mb-20">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Our Vision for Indian Markets</h2>
-          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-6 md:mb-10 leading-relaxed">
-            We envision a future where every Indian has access to institutional-grade trading tools, real-time market
-            insights, and AI-powered decision support. Hritik Stocks is building that future, one trader at a time.
-          </p>
+          
 
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
             {!user && (
@@ -343,11 +301,7 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* AI Chat Support */}
-        <div id="support" className="max-w-3xl mx-auto mb-12 md:mb-20">
-          <ChatSupport />
-        </div>
-
+    
         {/* Contact/Links */}
         <div className="text-center py-8 md:py-12 border-t border-border/50">
           <p className="text-muted-foreground mb-4 md:mb-6 text-sm md:text-base">Questions or suggestions? We'd love to hear from you.</p>

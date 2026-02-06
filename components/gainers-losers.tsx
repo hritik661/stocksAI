@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { fetchGainersLosers, type StockQuote } from "@/lib/yahoo-finance"
 import { formatCurrency, formatPercentage } from "@/lib/market-utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Check } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { quoteCache } from "@/lib/cache-utils"
@@ -14,11 +15,27 @@ import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 
 export function GainersLosers() {
-  const { user } = useAuth()
+  const { user, setUserFromData } = useAuth()
+  const searchParams = useSearchParams()
   const [gainers, setGainers] = useState<StockQuote[]>([])
   const [losers, setLosers] = useState<StockQuote[]>([])
   const [loading, setLoading] = useState(true)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [showPaymentGate, setShowPaymentGate] = useState(false)
+  const [processingPayment, setProcessingPayment] = useState(false)
   const TOP_COUNT = 100 // Show top 100 gainers/losers
+
+  // Check if user has paid for Top Gainers access
+  const hasTopGainersAccess = user?.isTopGainersPaid === true
+
+  // Check if user came back from successful payment
+  useEffect(() => {
+    if (searchParams?.get('from') === 'top-gainers-payment' && searchParams?.get('success') === 'true') {
+      if (hasTopGainersAccess) {
+        setShowSuccessModal(true)
+      }
+    }
+  }, [searchParams, hasTopGainersAccess])
 
   useEffect(() => {
     const fetchGainersLosersData = async () => {
@@ -102,106 +119,300 @@ export function GainersLosers() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-6">
-      {/* Top Gainers Card - With Paywall */}
-      <Card className="shadow-lg bg-card hover:border-primary/30 transition-colors p-1 md:p-2">
-        <CardHeader className="pb-0.5 md:pb-2">
-          <CardTitle className="text-xs md:text-base flex items-center gap-1 md:gap-2">
-            <TrendingUp className="h-2.5 w-2.5 md:h-4 md:w-4 text-primary" />
-            Top Gainers (5%+)
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-0.5 md:space-y-2 max-h-48 md:max-h-80 overflow-y-auto">
-          {Array.from(new Map(gainers.map(s => [s.symbol, s])).values()).map((stock) => (
-            <Link
-              key={stock.symbol}
-              href={`/stock/${encodeURIComponent(stock.symbol)}`}
-              className="block"
-            >
-              <div className="flex items-center justify-between p-1 md:p-2 rounded-md md:rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer border-2 border-border/40 hover:border-border/60">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-0.5 md:gap-2 mb-0.5 md:mb-1">
-                    <h3 className="font-semibold text-xs md:text-sm truncate">
-                      {stock.symbol.replace('.NS', '').replace('.BO', '')}
-                    </h3>
-                    <Badge
-                      variant="default"
-                      className="text-[10px] md:text-xs px-1 md:px-1.5 py-0.5 bg-primary/20 text-primary"
-                    >
-                      {formatPercentage(stock.regularMarketChangePercent)}
-                    </Badge>
-                  </div>
-                  <p className="text-[10px] md:text-xs text-muted-foreground truncate">
-                    {stock.shortName || stock.longName}
-                  </p>
-                </div>
-                <div className="text-right ml-1 md:ml-2">
-                  <p className="font-mono font-semibold text-[10px] md:text-sm">
-                    {formatCurrency(stock.regularMarketPrice)}
-                  </p>
-                  <p className="text-[10px] md:text-xs flex items-center gap-0.5 md:gap-1 text-primary">
-                    <ArrowUpRight className="h-2 w-2 md:h-2.5 md:w-2.5" />
-                    {formatCurrency(stock.regularMarketChange)}
-                  </p>
-                </div>
+    <>
+      {/* Payment Gate Modal - Show if user doesn't have access and tried to view */}
+      {showPaymentGate && !hasTopGainersAccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-card border-2 border-primary/40 rounded-2xl max-w-md w-full p-6 md:p-8 shadow-2xl">
+            <h2 className="text-xl md:text-2xl font-bold mb-2 text-foreground">🔒 Top Gainers Premium Access</h2>
+            <p className="text-muted-foreground mb-6">Get access to detailed fundamental analysis and advanced top gainers tracking.</p>
+            
+            <div className="bg-primary/10 border border-primary/30 rounded-xl p-6 text-center mb-6">
+              <p className="text-4xl font-black text-primary mb-2">₹200</p>
+              <p className="text-muted-foreground text-sm mb-4">One-time payment for lifetime access</p>
+              <ul className="space-y-2 text-sm text-foreground">
+                <li className="flex items-center gap-2 justify-center">
+                  <Check className="h-4 w-4 text-primary" />
+                  Top Gainers Analysis
+                </li>
+                <li className="flex items-center gap-2 justify-center">
+                  <Check className="h-4 w-4 text-primary" />
+                  Fundamental Research
+                </li>
+                <li className="flex items-center gap-2 justify-center">
+                  <Check className="h-4 w-4 text-primary" />
+                  No monthly fees
+                </li>
+              </ul>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
+              <button
+                onClick={() => setShowPaymentGate(false)}
+                className="px-3 py-2 md:px-4 md:py-2 rounded-lg border border-muted-foreground hover:border-foreground text-muted-foreground hover:text-foreground transition text-xs md:text-sm font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  setProcessingPayment(true)
+                  try {
+                    // Check auth first
+                    const authCheck = await fetch('/api/auth/me')
+                    if (!authCheck.ok) {
+                      alert('Please sign in to continue to payment.')
+                      setProcessingPayment(false)
+                      return
+                    }
+
+                    // Create payment link
+                    const res = await fetch('/api/predictions/create-payment', { method: 'POST' })
+                    const data = await res.json()
+                    
+                    if (data.paymentLink) {
+                      // Open Razorpay payment window
+                      const paymentWindow = window.open(data.paymentLink, '_blank', 'width=500,height=700')
+                      
+                      // Poll for payment window closure
+                      const checkPayment = setInterval(async () => {
+                        if (paymentWindow && paymentWindow.closed) {
+                          clearInterval(checkPayment)
+                          // Wait for webhook to process on backend
+                          await new Promise(resolve => setTimeout(resolve, 2000))
+                          
+                          try {
+                            // Verify payment status on server
+                            const verifyRes = await fetch('/api/auth/me?t=' + Date.now(), { cache: 'no-store' })
+                            if (verifyRes.ok) {
+                              const userData = await verifyRes.json()
+                              
+                              if (userData?.user?.isTopGainersPaid) {
+                                // Payment successful - update auth and redirect
+                                if (setUserFromData && userData.user) {
+                                  setUserFromData(userData.user)
+                                }
+                                // Redirect to home page with success params
+                                window.location.href = '/?from=top-gainers-payment&success=true'
+                                return
+                              }
+
+                              // For localhost dev, provide fallback
+                              const hostname = typeof window !== 'undefined' ? window.location.hostname : ''
+                              if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                                try {
+                                  if (setUserFromData) {
+                                    const patchedUser = { ...(user || {}), isTopGainersPaid: true }
+                                    setUserFromData(patchedUser)
+                                  }
+                                  localStorage.setItem('topgainers_access', 'true')
+                                  window.location.href = '/?from=top-gainers-payment&success=true&local=true'
+                                  return
+                                } catch (e) {
+                                  // fallback
+                                }
+                              }
+
+                              alert('Payment verification in progress. Please refresh the page.')
+                              window.location.href = '/'
+                            }
+                          } catch (err) {
+                            console.error('Payment verification error:', err)
+                            alert('Payment verification failed. Redirecting...')
+                            window.location.href = '/'
+                          } finally {
+                            setProcessingPayment(false)
+                          }
+                        }
+                      }, 500)
+                    } else {
+                      console.error('No payment link received')
+                      alert(data.error || 'Unable to generate payment link')
+                      setProcessingPayment(false)
+                    }
+                  } catch (err) {
+                    console.error('Error starting payment:', err)
+                    alert('Error starting payment. Please try again.')
+                    setProcessingPayment(false)
+                  }
+                }}
+                disabled={processingPayment}
+                className="px-3 py-2 md:px-4 md:py-2 rounded-lg bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-white transition text-xs md:text-sm font-semibold flex-1"
+              >
+                {processingPayment ? '⏳ Processing...' : '💳 Pay ₹200'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-white dark:bg-card rounded-2xl p-6 md:p-8 shadow-2xl text-center">
+            <div className="flex justify-center mb-4">
+              <div className="h-12 w-12 rounded-full bg-emerald-700/20 border-2 border-emerald-600 flex items-center justify-center animate-bounce">
+                <Check className="h-6 w-6 text-emerald-400" />
               </div>
-            </Link>
-          ))}
-          {gainers.length === 0 && (
-            <p className="text-[10px] md:text-sm text-muted-foreground text-center py-2 md:py-4">
-              No gainers available
-            </p>
-          )}
-        </CardContent>
-      </Card>
-      {/* Top Losers Card */}
-      <Card className="shadow-lg bg-card border-2 border-border/50 hover:border-border/70 transition-colors p-1 md:p-2">
-        <CardHeader className="pb-0.5 md:pb-2">
-          <CardTitle className="text-xs md:text-base flex items-center gap-1 md:gap-2">
-            <TrendingDown className="h-2.5 w-2.5 md:h-4 md:w-4 text-destructive" />
-            Top Losers (Below 0%)
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-0.5 md:space-y-2 max-h-48 md:max-h-80 overflow-y-auto">
-          {Array.from(new Map(losers.map(s => [s.symbol, s])).values()).map((stock) => (
-            <Link
-              key={stock.symbol}
-              href={`/stock/${encodeURIComponent(stock.symbol)}`}
-              className="block"
+            </div>
+            <h2 className="text-2xl md:text-3xl font-extrabold mb-2 text-emerald-400">🎉 Welcome One!</h2>
+            <p className="text-sm md:text-base text-muted-foreground mb-6">Welcome to Top Gainers Premium! You now have access to detailed analysis of top performing stocks. Happy trading!</p>
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full px-4 py-3 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold transition text-sm md:text-base"
             >
-              <div className="flex items-center justify-between p-1 md:p-2 rounded-md md:rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer border-2 border-border/40 hover:border-border/60">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-0.5 md:gap-2 mb-0.5 md:mb-1">
-                    <h3 className="font-semibold text-xs md:text-sm truncate">
-                      {stock.symbol.replace('.NS', '').replace('.BO', '')}
-                    </h3>
-                    <span className="text-[10px] md:text-xs text-destructive font-semibold">
-                      {formatPercentage(stock.regularMarketChangePercent)}
-                    </span>
-                  </div>
-                  <p className="text-[10px] md:text-xs text-muted-foreground truncate">
-                    {stock.shortName || stock.longName}
-                  </p>
-                </div>
-                <div className="text-right ml-1 md:ml-2">
-                  <p className="font-mono font-semibold text-[10px] md:text-sm">
-                    {formatCurrency(stock.regularMarketPrice)}
-                  </p>
-                  <p className="text-[10px] md:text-xs flex items-center gap-0.5 md:gap-1 text-destructive">
-                    <ArrowDownRight className="h-2 w-2 md:h-2.5 md:w-2.5" />
-                    {formatCurrency(stock.regularMarketChange)}
-                  </p>
-                </div>
+              OK, Show Me Top Gainers
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-6">
+        {/* Top Gainers Card */}
+        <div>
+          {!hasTopGainersAccess ? (
+            <Card className="shadow-lg bg-card/50 border-2 border-primary/20 p-1 md:p-2 relative overflow-hidden">
+              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-10 flex items-center justify-center">
+                <button
+                  onClick={() => setShowPaymentGate(true)}
+                  className="px-4 py-2 md:px-6 md:py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg text-sm md:text-base transition"
+                >
+                  🔒 Unlock Top Gainers
+                </button>
               </div>
-            </Link>
-          ))}
-          {losers.length === 0 && (
-            <p className="text-[10px] md:text-sm text-muted-foreground text-center py-2 md:py-4">
-              No losers available
-            </p>
+              <CardHeader className="pb-0.5 md:pb-2 opacity-50">
+                <CardTitle className="text-xs md:text-base flex items-center gap-1 md:gap-2">
+                  <TrendingUp className="h-2.5 w-2.5 md:h-4 md:w-4 text-primary" />
+                  Top Gainers (5%+)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-0.5 md:space-y-2 opacity-30">
+                {gainers.slice(0, 5).map((stock) => (
+                  <div key={stock.symbol} className="h-6 md:h-8 bg-secondary/50 rounded animate-pulse" />
+                ))}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="shadow-lg bg-card hover:border-primary/30 transition-colors p-1 md:p-2">
+              <CardHeader className="pb-0.5 md:pb-2 flex flex-row items-center justify-between">
+                <CardTitle className="text-xs md:text-base flex items-center gap-1 md:gap-2">
+                  <TrendingUp className="h-2.5 w-2.5 md:h-4 md:w-4 text-primary" />
+                  Top Gainers (5%+)
+                </CardTitle>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="h-6 md:h-8 text-xs md:text-sm px-2 md:px-3"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch('/api/predictions/revert-payment', { method: 'POST' })
+                      if (res.ok) {
+                        alert('Payment reverted successfully')
+                        window.location.reload()
+                      }
+                    } catch (err) {
+                      alert('Error reverting payment')
+                    }
+                  }}
+                >
+                  Revert
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-0.5 md:space-y-2 max-h-48 md:max-h-80 overflow-y-auto">
+                {Array.from(new Map(gainers.map(s => [s.symbol, s])).values()).map((stock) => (
+                  <Link
+                    key={stock.symbol}
+                    href={`/stock/${encodeURIComponent(stock.symbol)}`}
+                    className="block"
+                  >
+                    <div className="flex items-center justify-between p-1 md:p-2 rounded-md md:rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer border-2 border-border/40 hover:border-border/60">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-0.5 md:gap-2 mb-0.5 md:mb-1">
+                          <h3 className="font-semibold text-xs md:text-sm truncate">
+                            {stock.symbol.replace('.NS', '').replace('.BO', '')}
+                          </h3>
+                          <Badge
+                            variant="default"
+                            className="text-[10px] md:text-xs px-1 md:px-1.5 py-0.5 bg-primary/20 text-primary"
+                          >
+                            {formatPercentage(stock.regularMarketChangePercent)}
+                          </Badge>
+                        </div>
+                        <p className="text-[10px] md:text-xs text-muted-foreground truncate">
+                          {stock.shortName || stock.longName}
+                        </p>
+                      </div>
+                      <div className="text-right ml-1 md:ml-2">
+                        <p className="font-mono font-semibold text-[10px] md:text-sm">
+                          {formatCurrency(stock.regularMarketPrice)}
+                        </p>
+                        <p className="text-[10px] md:text-xs flex items-center gap-0.5 md:gap-1 text-primary">
+                          <ArrowUpRight className="h-2 w-2 md:h-2.5 md:w-2.5" />
+                          {formatCurrency(stock.regularMarketChange)}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+                {gainers.length === 0 && (
+                  <p className="text-[10px] md:text-sm text-muted-foreground text-center py-2 md:py-4">
+                    No gainers available
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+
+        {/* Top Losers Card */}
+        <Card className="shadow-lg bg-card border-2 border-border/50 hover:border-border/70 transition-colors p-1 md:p-2">
+          <CardHeader className="pb-0.5 md:pb-2">
+            <CardTitle className="text-xs md:text-base flex items-center gap-1 md:gap-2">
+              <TrendingDown className="h-2.5 w-2.5 md:h-4 md:w-4 text-destructive" />
+              Top Losers (Below 0%)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-0.5 md:space-y-2 max-h-48 md:max-h-80 overflow-y-auto">
+            {Array.from(new Map(losers.map(s => [s.symbol, s])).values()).map((stock) => (
+              <Link
+                key={stock.symbol}
+                href={`/stock/${encodeURIComponent(stock.symbol)}`}
+                className="block"
+              >
+                <div className="flex items-center justify-between p-1 md:p-2 rounded-md md:rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer border-2 border-border/40 hover:border-border/60">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-0.5 md:gap-2 mb-0.5 md:mb-1">
+                      <h3 className="font-semibold text-xs md:text-sm truncate">
+                        {stock.symbol.replace('.NS', '').replace('.BO', '')}
+                      </h3>
+                      <span className="text-[10px] md:text-xs text-destructive font-semibold">
+                        {formatPercentage(stock.regularMarketChangePercent)}%
+                      </span>
+                    </div>
+                    <p className="text-[10px] md:text-xs text-muted-foreground truncate">
+                      {stock.shortName || stock.longName}
+                    </p>
+                  </div>
+                  <div className="text-right ml-1 md:ml-2">
+                    <p className="font-mono font-semibold text-[10px] md:text-sm">
+                      {formatCurrency(stock.regularMarketPrice)}
+                    </p>
+                    <p className="text-[10px] md:text-xs flex items-center gap-0.5 md:gap-1 text-destructive">
+                      <ArrowDownRight className="h-2 w-2 md:h-2.5 md:w-2.5" />
+                      {formatCurrency(stock.regularMarketChange)}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+            {losers.length === 0 && (
+              <p className="text-[10px] md:text-sm text-muted-foreground text-center py-2 md:py-4">
+                No losers available
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </>
   )
 }
