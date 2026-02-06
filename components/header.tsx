@@ -19,7 +19,7 @@ import { searchStocks } from "@/lib/yahoo-finance"
 import { INDIAN_STOCKS } from "@/lib/stocks-data"
 import { cn } from "@/lib/utils"
 
-export function Header({ isLandingPage = false }: { isLandingPage?: boolean }) {
+export function Header({ isLandingPage = false, hideBalance = false }: { isLandingPage?: boolean, hideBalance?: boolean }) {
   const { user, logout, updateBalance } = useAuth()
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
@@ -130,7 +130,7 @@ export function Header({ isLandingPage = false }: { isLandingPage?: boolean }) {
                 </div>
                 
                 {/* Mobile balance - inline with search */}
-                {user && (
+                {user && !hideBalance && (
                   <div className="md:hidden flex items-center px-2 py-1.5 rounded-lg bg-primary/10 border border-primary/30">
                     <Wallet className="h-3 w-3 text-primary" />
                     <span className="text-[10px] font-semibold font-mono text-primary ml-1">{formatCurrency(user.balance)}</span>
@@ -234,7 +234,7 @@ export function Header({ isLandingPage = false }: { isLandingPage?: boolean }) {
               </Link>
               
               {/* Wallet Section - Laptop View Only */}
-              {user && (
+              {user && !hideBalance && (
                 <div className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/30">
                   <Wallet className="h-4 w-4 text-primary" />
                   <span className="text-sm font-semibold font-mono text-primary">{formatCurrency(user.balance)}</span>

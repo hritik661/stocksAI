@@ -153,7 +153,7 @@ export default function PredictionsPage() {
   // MAIN RENDERING LOGIC - PAYMENT GATE
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header hideBalance={true} />
       <div className="hidden md:block">
         <IndicesTicker />
       </div>
@@ -206,23 +206,23 @@ export default function PredictionsPage() {
           <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-8">
             <div className="w-full max-w-3xl">
               {/* Payment Header */}
-              <div className="text-center mb-10 space-y-4 animate-fade-in-up">
-                <h1 className="text-4xl md:text-5xl font-extrabold">
-                  🔮 Access Premium Stock Predictions
-                </h1>
-                <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-                  Get access to high-quality stock predictions backed by strong fundamentals and real market strength — at a price that's almost unbelievable.
-                </p>
-              </div>
+              <div className="text-center mb-8 space-y-3 animate-fade-in-up">
+                    <h1 className="text-2xl md:text-4xl font-extrabold">
+                      🔮 Access Premium Stock Predictions
+                    </h1>
+                    <p className="text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto">
+                      Get access to high-quality stock predictions backed by strong fundamentals and real market strength — at a price that's almost unbelievable.
+                    </p>
+                  </div>
 
               {/* Main Payment Box */}
               <div className="bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-primary/40 rounded-2xl p-8 md:p-12 mb-8 animate-bounce-slow">
                 {/* Price Section */}
-                <div className="text-center mb-8">
-                  <p className="text-sm md:text-base text-muted-foreground mb-4 font-medium tracking-widest uppercase">🎯 SPECIAL LIFETIME OFFER</p>
-                  <h2 className="text-6xl md:text-7xl font-extrabold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-                    Just ₹200
-                  </h2>
+                <div className="text-center mb-6">
+                    <p className="text-xs md:text-sm text-muted-foreground mb-4 font-medium tracking-widest uppercase">🎯 SPECIAL LIFETIME OFFER</p>
+                    <h2 className="text-4xl md:text-6xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+                      Just ₹200
+                    </h2>
                   <ul className="space-y-4 text-base md:text-lg text-foreground font-semibold max-w-md mx-auto">
                     <li className="flex items-center justify-center gap-3">
                       <span className="text-2xl">✓</span>
