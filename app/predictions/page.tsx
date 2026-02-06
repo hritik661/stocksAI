@@ -20,6 +20,48 @@ export default function PredictionsPage() {
   const [verifiedPaymentStatus, setVerifiedPaymentStatus] = useState<boolean | null>(null)
   const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false)
   const [showNews, setShowNews] = useState(true)
+  const [isRefreshingPayment, setIsRefreshingPayment] = useState(false)
+
+  // Function to verify payment status (can be called manually or automatically)
+  const verifyPayment = async () => {
+    if (isRefreshingPayment || !user) return
+    
+    setIsRefreshingPayment(true)
+    try {
+      console.log('🔄 Manually refreshing payment status...')
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 8000)
+
+      const res = await fetch('/api/auth/me?t=' + Date.now(), {
+        method: 'GET',
+        cache: 'no-store',
+        signal: controller.signal,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      })
+      clearTimeout(timeout)
+
+      if (res.ok) {
+        const data = await res.json()
+        const paid = data?.user?.isPredictionPaid === true
+        console.log('✅ Payment status refreshed:', paid)
+        setVerifiedPaymentStatus(paid)
+        
+        if (paid) {
+          setShowPaymentSuccessModal(true)
+        }
+      } else {
+        console.error('⚠️ Refresh failed with status:', res.status)
+      }
+    } catch (err) {
+      console.error('❌ Payment refresh error:', err)
+    } finally {
+      setIsRefreshingPayment(false)
+    }
+  }
 
   // CRITICAL: Block rendering until payment status is verified from server
   useEffect(() => {
@@ -34,9 +76,9 @@ export default function PredictionsPage() {
 
       try {
         console.log('🔍 Verifying payment status from server...')
-        // Use a short timeout so the page doesn't hang waiting for webhook processing
+        // Use a longer timeout to allow for webhook processing
         const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 3500)
+        const timeout = setTimeout(() => controller.abort(), 8000)
 
         // Force fresh data - no cache
         const res = await fetch('/api/auth/me?t=' + Date.now(), {
@@ -285,6 +327,13 @@ export default function PredictionsPage() {
                   className="px-8 py-4 rounded-xl border-2 border-muted-foreground hover:border-foreground hover:bg-muted/50 transition font-bold text-lg text-foreground"
                 >
                   ✕ Cancel
+                </button>
+                <button
+                  onClick={verifyPayment}
+                  disabled={isRefreshingPayment}
+                  className="px-8 py-4 rounded-xl border-2 border-amber-500/50 hover:border-amber-500 hover:bg-amber-500/10 transition font-bold text-lg text-amber-500 disabled:opacity-50"
+                >
+                  {isRefreshingPayment ? '⏳ Checking...' : '🔄 Verify Payment Status'}
                 </button>
                 <button
                   onClick={async () => {

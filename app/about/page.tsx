@@ -156,6 +156,13 @@ export default function AboutPage() {
               </ul>
             </div>
 
+            <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-blue-500/5 to-cyan-500/5 border border-blue-400/20">
+              <h3 className="text-lg md:text-xl font-bold mb-4">Before Everything You Need to Trade</h3>
+              <p className="text-muted-foreground text-sm md:text-base leading-relaxed mb-4">
+                Our comprehensive prediction service is your complete trading companion, designed to help you make informed decisions before every trade. We provide AI-powered stock predictions for 50+ Nifty stocks, identifying top gainer stocks and analyzing market trends. Every prediction comes with confidence scores, growth targets, and actionable insights so you understand exactly what to expect before risking your capital. Our prediction engine analyzes years of historical data combined with real-time market movements to deliver 85%+ accurate predictions. Whether you're tracking momentum plays, value stocks, or seeking the next big gainer, our service covers all trading styles with detailed technical analysis, fundamental insights, and market alerts to keep you ahead of the curve.
+              </p>
+            </div>
+
             <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-yellow-500/5 to-amber-500/5 border border-yellow-400/20">
               <div className="flex items-center gap-3 mb-4">
                 <TrendingUp className="h-6 w-6 md:h-7 md:w-7 text-amber-500" />
@@ -204,6 +211,52 @@ export default function AboutPage() {
                 <Button asChild className="w-full bg-amber-600 hover:bg-amber-700 rounded-xl text-sm md:text-base">
                   <Link href="/predictions">
                     Unlock Predictions Now - ₹200
+                    <ArrowRight className="h-3 w-3 md:h-4 md:w-4 ml-2" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border border-emerald-400/20">
+              <div className="flex items-center gap-3 mb-4">
+                <TrendingUp className="h-6 w-6 md:h-7 md:w-7 text-emerald-500" />
+                <h3 className="text-lg md:text-xl font-bold">Top Gainers Alert Service - Unlock Opportunities</h3>
+              </div>
+              <p className="text-muted-foreground text-sm md:text-base mb-4 leading-relaxed">
+                Get exclusive early-bird notifications for stocks predicted to be top gainers before they move! Our AI system identifies high-momentum stocks with growth potential and alerts you in real-time so you can capitalize on market opportunities first.
+              </p>
+              <div className="space-y-3 md:space-y-4">
+                <p className="font-semibold text-sm md:text-base text-foreground">Key Features:</p>
+                <ul className="space-y-2 md:space-y-3 text-xs md:text-sm text-muted-foreground">
+                  <li className="flex gap-3 items-start">
+                    <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <span><strong>Real-Time Top Gainer Alerts:</strong> Get instant notifications when our AI identifies potential top gainer stocks</span>
+                  </li>
+                  <li className="flex gap-3 items-start">
+                    <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <span><strong>Early Entry Advantage:</strong> Know about momentum plays before they become mainstream</span>
+                  </li>
+                  <li className="flex gap-3 items-start">
+                    <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <span><strong>Detailed Analysis:</strong> Each top gainer recommendation includes entry points, expected targets, and risk levels</span>
+                  </li>
+                  <li className="flex gap-3 items-start">
+                    <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <span><strong>Confidence Scores:</strong> Understand how confident our AI is about each prediction with detailed metrics</span>
+                  </li>
+                  <li className="flex gap-3 items-start">
+                    <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <span><strong>Technical Breakdown:</strong> See the technical indicators and patterns that triggered each prediction</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="mt-6 pt-6 border-t border-emerald-200/30">
+                <p className="text-center text-sm md:text-base font-semibold text-foreground mb-4">
+                  Identify High-Potential Gainers Before They Move
+                </p>
+                <Button asChild className="w-full bg-emerald-600 hover:bg-emerald-700 rounded-xl text-sm md:text-base">
+                  <Link href="/predictions">
+                    Explore Top Gainers - ₹200
                     <ArrowRight className="h-3 w-3 md:h-4 md:w-4 ml-2" />
                   </Link>
                 </Button>
@@ -274,7 +327,7 @@ export default function AboutPage() {
               },
               {
                 q: "Can I trade in real markets?",
-                a: "Currently, Hrtik provides virtual trading with ₹10,00,000 starting balance so you can practice without real capital. Your portfolio, trades and P&L persist across logins on this device. Real (broker-connected) trading may be supported in a future release.",
+                a: "Currently, Stock AI virtual trading with ₹10,00,000 starting balance so you can practice without real capital. Your portfolio, trades and P&L persist across logins on this device. Real (broker-connected) trading may be supported in a future release.",
               },
               {
                 q: "How can I restore my virtual balance?",
@@ -282,7 +335,7 @@ export default function AboutPage() {
               },
               {
                 q: "What payment methods do you accept?",
-                a: "We accept UPI payments via UPIPG gateway for all premium features and prediction unlocks.",
+                a: "We accept UPI, debit cards, credit cards, net banking, and all major payment apps (Google Pay, PhonePe, Paytm, etc.) via the secure UPIPG gateway for all premium features and prediction unlocks.",
                 icon: <div className="flex items-center gap-1"><Smartphone className="h-3 w-3 md:h-4 md:w-4" /><span className="text-xs font-bold bg-blue-600 text-white px-1 py-0.5 rounded">UPI</span></div>
               },
               {

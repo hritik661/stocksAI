@@ -33,9 +33,9 @@ export function HeroSection() {
         </div>
 
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 mb-6 md:mb-8">
-          <Zap className="h-4 w-4 text-primary" />
-          <span className="text-sm font-bold text-primary uppercase tracking-wider">Welcome to StockAI - India's #1 Trading Platform</span>
+        <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-primary/10 border border-primary/30 mb-6 md:mb-8 max-w-full md:max-w-none">
+          <Zap className="h-3 w-3 md:h-4 md:w-4 text-primary shrink-0" />
+          <span className="text-xs md:text-sm font-bold text-primary uppercase tracking-wider whitespace-nowrap md:whitespace-normal">Welcome to StockAI - India's #1 Trading Platform</span>
         </div>
 
         {/* Main Heading */}
