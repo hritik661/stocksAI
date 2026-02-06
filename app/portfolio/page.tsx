@@ -239,21 +239,29 @@ export default function PortfolioPage() {
         const marketStatus = isMarketOpen()
         const lastPrices = getLastPrices()
         
-        // Determine effective price for P&L calculation:
-        // - If market is OPEN and we have a valid price: use current market price
-        // - If market is CLOSED: use LAST TRADING PRICE (stored closing price) for persistent P&L
-        // - If neither available: use entry price as fallback
-        let effectivePrice = holding.avgPrice
+        console.log(`[v0] Processing ${holding.symbol}: market=${marketStatus.isOpen}, currentPrice=${currentMarketPrice}, lastPrice=${lastPrices[holding.symbol]}`)
         
-        if (marketStatus.isOpen && currentMarketPrice && !isNaN(currentMarketPrice) && currentMarketPrice > 0) {
-          // Market is open and we have a valid current price
+        // Determine effective price for P&L calculation:
+        // RULE: Always use the most recent price available
+        // 1. If market OPEN and we have live price: use it (and save as last trading price)
+        // 2. If market CLOSED: use stored last trading price (ensures persistent P&L)
+        // 3. Otherwise: use entry price as absolute fallback
+        let effectivePrice = holding.avgPrice
+        let priceSource = "entry"
+        
+        if (currentMarketPrice && !isNaN(currentMarketPrice) && currentMarketPrice > 0) {
+          // We have a live market price
           effectivePrice = currentMarketPrice
-          // Store the current market price for use when market closes
+          priceSource = "live"
+          
+          // Always save the current price as "last trading price" when we fetch it
+          // This is the most recent price we have, whether market is open or closed
+          setLastPrice(holding.symbol, currentMarketPrice)
           storeLastTradingPrice(user.email, holding.symbol, currentMarketPrice)
-        } else if (!marketStatus.isOpen && typeof lastPrices[holding.symbol] === 'number' && lastPrices[holding.symbol] > 0) {
-          // Market is closed: use last trading price stored from yesterday's close
-          // This ensures P&L persists even after market closes
+        } else if (typeof lastPrices[holding.symbol] === 'number' && lastPrices[holding.symbol] > 0) {
+          // No live price, but we have a stored last price
           effectivePrice = lastPrices[holding.symbol]
+          priceSource = "stored"
         }
         
         const safeEffectivePrice = isNaN(effectivePrice) || effectivePrice <= 0 ? holding.avgPrice : effectivePrice
@@ -265,10 +273,11 @@ export default function PortfolioPage() {
         const currentValue = portfolioPrice * safeQuantity
         
         // P&L = (Effective Price - Avg Price) * Quantity
-        // When market is closed: uses last trading price for persistent P&L
-        // When market is open: uses live price for real-time P&L
+        // Uses the most recent price available (live if market open, last price if closed)
         const pnl = calculatePnL(safeAvgPrice, safeEffectivePrice, safeQuantity)
         const pnlPercent = calculatePnLPercent(safeAvgPrice, safeEffectivePrice)
+
+        console.log(`[v0] ${holding.symbol}: effectivePrice=${safeEffectivePrice} (${priceSource}), pnl=${pnl}, pnlPercent=${pnlPercent}`)
 
         return {
           ...holding,

@@ -109,7 +109,8 @@ export function calculatePortfolioMetrics(holdings: Array<{
 
 /**
  * Store last trading price for a symbol
- * Used to maintain deterministic P&L when market is closed
+ * Used to maintain deterministic P/L when market is closed
+ * UNIFIED KEY: Uses 'last_prices_${userEmail}' for consistency across the app
  */
 export function storeLastTradingPrice(
   userEmail: string,
@@ -119,7 +120,8 @@ export function storeLastTradingPrice(
   try {
     if (!userEmail || !symbol || isNaN(price) || price <= 0) return
     
-    const key = `last_trading_price_${userEmail}`
+    // UNIFIED KEY - must match what portfolio/trade-panel uses
+    const key = `last_prices_${userEmail}`
     const prices = (() => {
       try {
         const stored = localStorage.getItem(key)
@@ -127,6 +129,59 @@ export function storeLastTradingPrice(
       } catch {
         return {}
       }
+    })()
+    
+    prices[symbol] = price
+    localStorage.setItem(key, JSON.stringify(prices))
+    
+    console.log(`[v0] Stored last trading price: ${symbol} = ${price}`)
+  } catch (error) {
+    console.warn('Failed to store last trading price:', error)
+  }
+}
+
+/**
+ * Get last trading price for a symbol
+ * Returns the price if available, undefined otherwise
+ */
+export function getLastTradingPrice(
+  userEmail: string,
+  symbol: string
+): number | undefined {
+  try {
+    if (!userEmail || !symbol) return undefined
+    
+    // UNIFIED KEY - must match what portfolio/trade-panel uses
+    const key = `last_prices_${userEmail}`
+    const stored = localStorage.getItem(key)
+    if (!stored) return undefined
+    
+    const prices = JSON.parse(stored)
+    const price = prices[symbol]
+    
+    if (typeof price === 'number' && !isNaN(price) && price > 0) {
+      return price
+    }
+    
+    return undefined
+  } catch (error) {
+    console.warn('Failed to get last trading price:', error)
+    return undefined
+  }
+}
+
+/**
+ * Clear all stored trading prices (for logout or reset)
+ */
+export function clearLastTradingPrices(userEmail: string): void {
+  try {
+    if (!userEmail) return
+    // UNIFIED KEY
+    localStorage.removeItem(`last_prices_${userEmail}`)
+  } catch (error) {
+    console.warn('Failed to clear trading prices:', error)
+  }
+}
     })()
     
     prices[symbol] = {
