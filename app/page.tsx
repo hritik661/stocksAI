@@ -74,7 +74,7 @@ export default function HomePage() {
                   Market Dashboard
                 </h1>
                 <p className="text-muted-foreground text-xs md:text-sm font-medium">
-                  Managing <span className="text-primary font-bold">₹{user.balance.toLocaleString("en-IN")}</span> • <span className="text-emerald-500">Ready to trade</span>
+                  Managing <span className="text-primary font-bold">₹{user.balance.toLocaleString("en-IN")}</span> • <span className="text-blue-600 dark:text-blue-400">Ready to trade</span>
                 </p>
               </div>
               <div className="flex items-center gap-2 md:gap-2 glass-morphism px-3 md:px-4 py-2 md:py-2.5 rounded-xl animate-scale-bounce">
@@ -84,7 +84,7 @@ export default function HomePage() {
             </div>
 
             {/* Welcome Banner */}
-            <div className="p-4 md:p-6 rounded-2xl bg-gradient-to-r from-primary/10 via-accent/5 to-primary/5 border border-primary/20 md:border-border/50">
+            <div className="p-4 md:p-6 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 border border-blue-200 dark:border-slate-600 md:border-border/50">
               <div className="flex gap-3 md:gap-4">
                 <div className="flex-1">
                   <h2 className="font-bold text-base md:text-lg mb-1 md:mb-2">Welcome to Stocks AI!</h2>

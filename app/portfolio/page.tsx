@@ -431,68 +431,68 @@ export default function PortfolioPage() {
 
         {/* Overview Cards */}
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-8">
-          <Card className="border-border">
+          <Card className="border-blue-200 dark:border-slate-600 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-slate-800 dark:to-slate-700">
             <CardContent className="p-2 md:p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] md:text-sm text-muted-foreground">Available Balance</p>
-                  <p className="text-base md:text-2xl font-bold font-mono">{formatCurrency(user.balance)}</p>
+                  <p className="text-base md:text-2xl font-bold font-mono text-blue-900 dark:text-blue-100">{formatCurrency(user.balance)}</p>
                 </div>
-                <div className="h-6 w-6 md:h-10 md:w-10 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Wallet className="h-3 w-3 md:h-5 md:w-5 text-primary" />
+                <div className="h-6 w-6 md:h-10 md:w-10 rounded-full bg-blue-200 dark:bg-blue-600 flex items-center justify-center">
+                  <Wallet className="h-3 w-3 md:h-5 md:w-5 text-blue-700 dark:text-blue-100" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-border">
+          <Card className="border-indigo-200 dark:border-slate-600 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-slate-700 dark:to-slate-600">
             <CardContent className="p-2 md:p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] md:text-sm text-muted-foreground">Portfolio Value</p>
-                  <p className="text-base md:text-2xl font-bold font-mono">{formatCurrency(totalCurrentValue)}</p>
+                  <p className="text-base md:text-2xl font-bold font-mono text-indigo-900 dark:text-indigo-100">{formatCurrency(totalCurrentValue)}</p>
                 </div>
-                <div className="h-6 w-6 md:h-10 md:w-10 rounded-full bg-accent/20 flex items-center justify-center">
-                  <PieChart className="h-3 w-3 md:h-5 md:w-5 text-accent" />
+                <div className="h-6 w-6 md:h-10 md:w-10 rounded-full bg-indigo-200 dark:bg-indigo-600 flex items-center justify-center">
+                  <PieChart className="h-3 w-3 md:h-5 md:w-5 text-indigo-700 dark:text-indigo-100" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-border">
+          <Card className="border-slate-300 dark:border-slate-600 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600">
             <CardContent className="p-2 md:p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] md:text-sm text-muted-foreground">Total Invested</p>
-                  <p className="text-base md:text-2xl font-bold font-mono">{formatCurrency(totalInvested)}</p>
+                  <p className="text-base md:text-2xl font-bold font-mono text-slate-900 dark:text-slate-100">{formatCurrency(totalInvested)}</p>
                 </div>
-                <div className="h-6 w-6 md:h-10 md:w-10 rounded-full bg-secondary flex items-center justify-center">
-                  <ArrowUpRight className="h-3 w-3 md:h-5 md:w-5 text-muted-foreground" />
+                <div className="h-6 w-6 md:h-10 md:w-10 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center">
+                  <ArrowUpRight className="h-3 w-3 md:h-5 md:w-5 text-slate-700 dark:text-slate-300" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-border">
+          <Card className={`border-2 ${totalPnL >= 0 ? "border-green-300 dark:border-green-700" : "border-red-300 dark:border-red-700"} bg-gradient-to-br ${totalPnL >= 0 ? "from-green-50 to-green-100 dark:from-slate-700 dark:to-slate-600" : "from-red-50 to-red-100 dark:from-slate-700 dark:to-slate-600"}`}>
             <CardContent className="p-2 md:p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] md:text-sm text-muted-foreground">Total P&L</p>
-                  <p className={`text-base md:text-2xl font-bold font-mono ${totalPnL >= 0 ? "text-primary" : "text-destructive"}`}>
+                  <p className={`text-base md:text-2xl font-bold font-mono ${totalPnL >= 0 ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}`}>
                     {totalPnL >= 0 ? "+" : ""}
                     {formatCurrency(totalPnL)}
                   </p>
-                  <p className={`text-[10px] md:text-sm ${totalPnL >= 0 ? "text-primary" : "text-destructive"}`}>
+                  <p className={`text-[10px] md:text-sm ${totalPnL >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
                     {formatPercentage(totalPnLPercent)}
                   </p>
                 </div>
                 <div
-                  className={`h-6 w-6 md:h-10 md:w-10 rounded-full flex items-center justify-center ${totalPnL >= 0 ? "bg-primary/20" : "bg-destructive/20"}`}
+                  className={`h-6 w-6 md:h-10 md:w-10 rounded-full flex items-center justify-center ${totalPnL >= 0 ? "bg-green-200 dark:bg-green-600" : "bg-red-200 dark:bg-red-600"}`}
                 >
                   {totalPnL >= 0 ? (
-                    <TrendingUp className="h-3 w-3 md:h-5 md:w-5 text-primary" />
+                    <TrendingUp className={`h-3 w-3 md:h-5 md:w-5 ${totalPnL >= 0 ? "text-green-700 dark:text-green-100" : "text-red-700 dark:text-red-100"}`} />
                   ) : (
-                    <TrendingDown className="h-3 w-3 md:h-5 md:w-5 text-destructive" />
+                    <TrendingDown className={`h-3 w-3 md:h-5 md:w-5 ${totalPnL >= 0 ? "text-green-700 dark:text-green-100" : "text-red-700 dark:text-red-100"}`} />
                   )}
                 </div>
               </div>

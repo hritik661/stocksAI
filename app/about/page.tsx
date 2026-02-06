@@ -82,10 +82,10 @@ export default function AboutPage() {
             ].map((feature, idx) => {
               const Icon = feature.icon
               return (
-                <Card key={idx} className="border border-primary/20 md:border-border bg-card/50 hover:border-primary/30 md:hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 animate-fade-in-up" style={{ animationDelay: `${idx * 150}ms` }}>
+                <Card key={idx} className="border border-blue-200 dark:border-slate-600 md:border-border bg-gradient-to-br from-blue-50 to-blue-100 dark:from-slate-800 dark:to-slate-700 hover:border-blue-300 md:hover:border-blue-400 transition-all duration-300 hover:shadow-xl hover:shadow-blue-100 dark:hover:shadow-blue-900 hover:-translate-y-1 animate-fade-in-up" style={{ animationDelay: `${idx * 150}ms` }}>
                   <CardContent className="p-4 md:p-6">
-                    <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 md:mb-4 group-hover:bg-primary/20 transition-colors">
-                      <Icon className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                    <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-blue-200 dark:bg-blue-600 flex items-center justify-center mb-3 md:mb-4 group-hover:bg-blue-300 dark:group-hover:bg-blue-700 transition-colors">
+                      <Icon className="h-5 w-5 md:h-6 md:w-6 text-blue-700 dark:text-blue-100" />
                     </div>
                     <h3 className="text-base md:text-lg font-bold mb-2">{feature.title}</h3>
                     <p className="text-muted-foreground text-xs md:text-sm">{feature.desc}</p>
@@ -98,20 +98,20 @@ export default function AboutPage() {
 
         {/* Company Info */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-12 md:mb-20">
-          <div className="text-center p-4 md:p-8 rounded-2xl bg-secondary/50 border border-primary/20 md:border-border">
-            <div className="text-2xl md:text-4xl font-black text-primary mb-2 md:mb-3">10K+</div>
+          <div className="text-center p-4 md:p-8 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-slate-800 dark:to-slate-700 border border-blue-200 dark:border-slate-600 md:border-border">
+            <div className="text-2xl md:text-4xl font-black text-blue-700 dark:text-blue-400 mb-2 md:mb-3">10K+</div>
             <p className="text-muted-foreground font-medium text-sm md:text-base">Active Traders</p>
             <p className="text-xs text-muted-foreground mt-1 md:mt-2">Trading on daily basis</p>
           </div>
 
-          <div className="text-center p-4 md:p-8 rounded-2xl bg-secondary/50 border border-primary/20 md:border-border">
-            <div className="text-2xl md:text-4xl font-black text-primary mb-2 md:mb-3">50+</div>
+          <div className="text-center p-4 md:p-8 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-slate-800 dark:to-slate-700 border border-indigo-200 dark:border-slate-600 md:border-border">
+            <div className="text-2xl md:text-4xl font-black text-indigo-700 dark:text-indigo-400 mb-2 md:mb-3">50+</div>
             <p className="text-muted-foreground font-medium text-sm md:text-base">Nifty Stocks Tracked</p>
             <p className="text-xs text-muted-foreground mt-1 md:mt-2">With AI predictions & analytics</p>
           </div>
 
-          <div className="text-center p-4 md:p-8 rounded-2xl bg-secondary/50 border border-primary/20 md:border-border">
-            <div className="text-2xl md:text-4xl font-black text-primary mb-2 md:mb-3">24/7</div>
+          <div className="text-center p-4 md:p-8 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border border-slate-300 dark:border-slate-600 md:border-border">
+            <div className="text-2xl md:text-4xl font-black text-slate-700 dark:text-slate-300 mb-2 md:mb-3">24/7</div>
             <p className="text-muted-foreground font-medium text-sm md:text-base">Market Coverage</p>
             <p className="text-xs text-muted-foreground mt-1 md:mt-2">Real-time insights & updates</p>
           </div>

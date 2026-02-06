@@ -150,7 +150,7 @@ export function LoginForm({ compact, full, compactOnly }: { compact?: boolean; f
                       </div>
                     </div>
 
-                    <Button type="submit" className="w-full h-12 bg-gradient-to-r from-primary to-emerald-400 text-white font-semibold text-lg" disabled={otpLoading}>
+                    <Button type="submit" className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold text-lg" disabled={otpLoading}>
                       {otpLoading ? (
                         <>
                           <Loader className="h-4 w-4 animate-spin mr-2" />
@@ -186,7 +186,7 @@ export function LoginForm({ compact, full, compactOnly }: { compact?: boolean; f
                       <p className="text-xs text-muted-foreground mt-2">Code expires in 5 minutes</p>
                     </div>
 
-                    <Button type="submit" className="w-full h-12 bg-gradient-to-r from-primary to-emerald-400 text-white font-semibold text-lg" disabled={otpLoading}>
+                    <Button type="submit" className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold text-lg" disabled={otpLoading}>
                       {otpLoading ? (
                         <>
                           <Loader className="h-4 w-4 animate-spin mr-2" />
@@ -217,7 +217,7 @@ export function LoginForm({ compact, full, compactOnly }: { compact?: boolean; f
   return (
     <Card className={`${cardWidth} login-card-entrance login-backdrop`}>
       <div className={`grid grid-cols-1 md:grid-cols-2 rounded-xl overflow-hidden shadow-2xl`}>
-        <div className={`hidden md:flex flex-col items-center justify-center p-10 lg:p-14 bg-gradient-to-br from-primary to-emerald-400 text-black gap-6 left-panel-entrance`}>
+          <div className={`hidden md:flex flex-col items-center justify-center p-10 lg:p-14 bg-gradient-to-br from-slate-900 to-primary text-white gap-6 left-panel-entrance`}>
           <div className="rounded-xl bg-white p-5 shadow-xl transform-gpu scale-100 left-panel-icon">
             <Sparkles className="h-10 w-10 text-primary" />
           </div>
@@ -269,7 +269,7 @@ export function LoginForm({ compact, full, compactOnly }: { compact?: boolean; f
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full h-9 md:h-12 bg-gradient-to-r from-primary to-emerald-400 text-white font-semibold text-sm md:text-lg hover:opacity-90" disabled={otpLoading}>
+                <Button type="submit" className="w-full h-9 md:h-12 bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold text-sm md:text-lg hover:opacity-90" disabled={otpLoading}>
                   {otpLoading ? (
                     <>
                       <Loader className="h-4 w-4 animate-spin mr-2" />

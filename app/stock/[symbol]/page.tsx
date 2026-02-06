@@ -223,7 +223,7 @@ export default function StockDetailPage() {
           <span className="text-3xl md:text-5xl font-bold font-mono tracking-tight">
             {formatCurrency(stock.regularMarketPrice)}
           </span>
-          <div className={`flex items-center gap-2 ${isPositive ? "text-primary" : "text-destructive"}`}>
+          <div className={`flex items-center gap-2 ${isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
             {isPositive ? <TrendingUp className="h-5 w-5 md:h-6 md:w-6" /> : <TrendingDown className="h-5 w-5 md:h-6 md:w-6" />}
             <span className="text-lg md:text-2xl font-semibold">
               {isPositive ? "+" : ""}
@@ -238,21 +238,21 @@ export default function StockDetailPage() {
           {/* Main Chart Area (second on mobile) */}
           <div className="order-2 lg:order-1 lg:col-span-2 space-y-4 md:space-y-6">
             {/* Chart */}
-            <Card className="border-border rounded-xl overflow-hidden">
+            <Card className="border-blue-200 dark:border-slate-600 rounded-xl overflow-hidden bg-white dark:bg-slate-800">
               <CardContent className="p-4 md:p-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="candlestick" className="w-full">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                    <TabsList className="bg-secondary/50">
+                    <TabsList className="bg-slate-100 dark:bg-slate-700">
                       <TabsTrigger
                         value="line"
-                        className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                        className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
                       >
                         <Activity className="h-4 w-4" />
                         Line
                       </TabsTrigger>
                       <TabsTrigger
                         value="candlestick"
-                        className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                        className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
                       >
                         <BarChart3 className="h-4 w-4" />
                         Candlestick
@@ -274,8 +274,8 @@ export default function StockDetailPage() {
                           className={cn(
                             "text-xs font-medium px-3 rounded-full transition-all",
                             currentRange === range
-                              ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                              : "hover:bg-secondary",
+                              ? "bg-blue-600 text-white hover:bg-blue-700"
+                              : "hover:bg-slate-100 dark:hover:bg-slate-700",
                           )}
                         >
                           {range}

@@ -338,11 +338,11 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
   }
 
   return (
-    <Card id="trade-panel" className="border-border shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <Card id="trade-panel" className="border-blue-200 dark:border-slate-600 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-gradient-to-br from-white dark:from-slate-800 to-blue-50 dark:to-slate-700">
       <CardHeader className="pb-2 md:pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base md:text-lg">Trade {stock.symbol.replace(".NS", "")}</CardTitle>
-          <div className="flex gap-1 bg-secondary/50 p-1 rounded-lg">
+          <CardTitle className="text-base md:text-lg text-slate-900 dark:text-white">Trade {stock.symbol.replace(".NS", "")}</CardTitle>
+          <div className="flex gap-1 bg-slate-100 dark:bg-slate-700 p-1 rounded-lg">
             <Button
               variant={tradeType === "equity" ? "secondary" : "ghost"}
               size="sm"
@@ -368,7 +368,7 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
             <div className="grid grid-cols-2 gap-2">
               <Button
                 variant={optionType === "CE" ? "default" : "outline"}
-                className={cn("h-12 gap-2", optionType === "CE" && "bg-primary text-primary-foreground")}
+                className={cn("h-12 gap-2", optionType === "CE" && "bg-blue-600 hover:bg-blue-700 text-white")}
                 onClick={() => setOptionType("CE")}
               >
                 <TrendingUp className="h-4 w-4" />
@@ -376,7 +376,7 @@ export function TradePanel({ stock, preselectedOption, initialTab }: TradePanelP
               </Button>
               <Button
                 variant={optionType === "PE" ? "default" : "outline"}
-                className={cn("h-12 gap-2", optionType === "PE" && "bg-destructive text-destructive-foreground")}
+                className={cn("h-12 gap-2", optionType === "PE" && "bg-red-600 hover:bg-red-700 text-white")}
                 onClick={() => setOptionType("PE")}
               >
                 <TrendingDown className="h-4 w-4" />

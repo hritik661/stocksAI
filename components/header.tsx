@@ -80,7 +80,7 @@ export function Header({ isLandingPage = false, hideBalance = false }: { isLandi
               <div className="relative h-8 w-8 md:h-10 md:w-10 flex items-center justify-center">
                 <img src="/stockai-logo.png" alt="StockAI" className="h-full w-full object-contain" onError={(e) => { e.currentTarget.src = '/stockai-logo.svg' }} />
               </div>
-              <span className="hidden sm:inline text-sm md:text-base font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              <span className="hidden sm:inline text-sm md:text-base font-bold bg-gradient-to-r from-blue-600 to-slate-800 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">
                 StockAI
               </span>
             </Link>
