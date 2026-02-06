@@ -490,9 +490,10 @@ export function PredictionsList() {
               key={stock.symbol}
               className="p-3 md:p-4 rounded-lg bg-card transition-colors cursor-pointer hover:shadow-lg overflow-hidden relative border border-primary/20"
               onClick={() => {
-                setSelectedStock(stock)
-                setChartRange("1M")
-              }}
+                    setSelectedStock(stock)
+                    setChartRange("1M")
+                    try { window.dispatchEvent(new CustomEvent('predictionSelected', { detail: { selected: true } })) } catch {}
+                  }}
             >
             <div className="flex justify-between items-start mb-2">
               <div className="flex items-center gap-2">
@@ -503,7 +504,7 @@ export function PredictionsList() {
               </div>
               <div className="text-right">
                 <div className="font-mono font-bold text-base md:text-lg">₹{stock.price ? stock.price.toLocaleString("en-IN") : "0"}</div>
-                <div className={`text-xs md:text-sm font-bold px-2.5 py-1.5 md:px-3 md:py-1.5 rounded-md ${stock.change >= 0 ? "text-green-950 bg-green-600/30 border border-green-700/60 font-extrabold" : "text-red-600 bg-red-50 border border-red-300"}`}>
+                <div className={`text-[11px] md:text-sm font-bold px-1.5 md:px-3 py-1 md:py-1.5 rounded-md md:rounded-md ${stock.change >= 0 ? "text-emerald-700 md:text-green-950 md:bg-green-600/30 md:border md:border-green-700/60 md:font-extrabold" : "text-red-600 md:bg-red-50 md:border md:border-red-300"}`}>
                   {stock.change >= 0 ? "+" : ""}
                   {(stock.changePercent || 0).toFixed(2)}%
                 </div>
@@ -570,7 +571,7 @@ export function PredictionsList() {
                 <p className="text-sm text-muted-foreground">Predicted: +{selectedStock.predictedGrowth.toFixed(1)}% • Confidence: {selectedStock.confidence.toFixed(0)}%</p>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={() => setSelectedStock(null)}>✕</Button>
+                <Button variant="ghost" size="icon" onClick={() => { setSelectedStock(null); try { window.dispatchEvent(new CustomEvent('predictionSelected', { detail: { selected: false } })) } catch {} }}>✕</Button>
               </div>
             </div>
 
@@ -649,9 +650,10 @@ export function PredictionsList() {
                       <Button
                         size="sm"
                         onClick={() => {
-                          setQuantityDialog({ visible: true, stock: selectedStock, type: 'buy', quantity: 1 })
-                          setSelectedStock(null)
-                        }}
+                            setQuantityDialog({ visible: true, stock: selectedStock, type: 'buy', quantity: 1 })
+                            setSelectedStock(null)
+                            try { window.dispatchEvent(new CustomEvent('predictionSelected', { detail: { selected: false } })) } catch {}
+                          }}
                         className="bg-green-600 hover:bg-green-700"
                       >
                         Buy
@@ -662,6 +664,7 @@ export function PredictionsList() {
                         onClick={() => {
                           setQuantityDialog({ visible: true, stock: selectedStock, type: 'sell', quantity: 1 })
                           setSelectedStock(null)
+                          try { window.dispatchEvent(new CustomEvent('predictionSelected', { detail: { selected: false } })) } catch {}
                         }}
                       >
                         Sell

@@ -19,6 +19,7 @@ export default function PredictionsPage() {
   const [authReady, setAuthReady] = useState(false)
   const [verifiedPaymentStatus, setVerifiedPaymentStatus] = useState<boolean | null>(null)
   const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false)
+  const [showNews, setShowNews] = useState(true)
 
   // CRITICAL: Block rendering until payment status is verified from server
   useEffect(() => {
@@ -94,6 +95,16 @@ export default function PredictionsPage() {
     }
 
     verifyPaymentStatus()
+
+    // Listen for prediction selection events to hide/show NewsSection
+    const handler = (e: any) => {
+      try {
+        const selected = e?.detail?.selected
+        if (typeof selected === 'boolean') setShowNews(!selected)
+      } catch (err) {}
+    }
+    window.addEventListener('predictionSelected', handler)
+    return () => window.removeEventListener('predictionSelected', handler)
   }, [user, isLoading, searchParams])
 
   // Block rendering while checking payment
@@ -179,13 +190,13 @@ export default function PredictionsPage() {
                   </div>
                 </div>
               </div>
-            ) : (
+              ) : (
               <div className="flex flex-col lg:flex-row gap-4 md:gap-8">
                 <div className="flex-1">
                   <PredictionsList />
                 </div>
                 <div className="w-full lg:w-80 space-y-4 md:space-y-8">
-                  <NewsSection limit={8} />
+                  {showNews && <NewsSection limit={8} />}
                 </div>
               </div>
             )}

@@ -113,20 +113,20 @@ export default function PredictionsHero() {
 
       <div className="relative z-10">
         {/* Smaller Header */}
-        <div className="flex items-center gap-3 sm:gap-5 mb-4 sm:mb-6">
+          <div className="flex items-center gap-3 sm:gap-5 mb-4 sm:mb-6">
           <div className="h-10 w-10 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center shrink-0">
             <Zap className="h-6 w-6 sm:h-10 sm:w-10 text-primary animate-pulse" />
           </div>
           <div>
-            <h2 className="text-lg sm:text-2xl font-extrabold text-foreground mb-1 sm:mb-2">AI-Powered Stock Predictions</h2>
-            <p className="text-sm sm:text-lg text-muted-foreground max-w-xs sm:max-w-xl">Advanced machine learning models analyzing real-time market data to predict stock movements with 85%+ accuracy</p>
+            <h2 className="text-base sm:text-2xl font-extrabold text-foreground mb-1 sm:mb-2">AI-Powered Stock Predictions</h2>
+            <p className="text-xs sm:text-lg text-muted-foreground max-w-xs sm:max-w-xl">Advanced machine learning models analyzing real-time market data to predict stock movements with 85%+ accuracy</p>
           </div>
         </div>
 
         {/* Smaller Payment Button with Revert Option */}
         <div className="mb-4 sm:mb-6 flex gap-3 flex-wrap">
           <button
-            className="bg-primary text-white px-4 py-2 sm:px-8 sm:py-3 rounded-lg sm:rounded-xl font-bold shadow-lg hover:bg-primary/80 transition text-base sm:text-lg"
+            className="bg-primary text-white px-4 py-2 sm:px-8 sm:py-3 rounded-lg sm:rounded-xl font-bold shadow-lg hover:bg-primary/80 transition text-sm sm:text-lg"
             onClick={() => handlePredictionClick(setShowModal, markPredictionsAsPaid, setUserFromData, user)}
           >
             Access Predictions (Pay to Continue)
@@ -213,7 +213,7 @@ export default function PredictionsHero() {
               <div key={idx} className="glass-morphism rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2 sm:gap-4">
                 <Icon className="h-5 w-5 sm:h-7 sm:w-7 text-primary shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-xs sm:text-sm md:text-base text-muted-foreground leading-tight">{item.label}</p>
+                  <p className="text-[11px] sm:text-sm md:text-base text-muted-foreground leading-tight">{item.label}</p>
                   <p className="font-bold text-sm sm:text-base md:text-lg text-gradient leading-tight">{item.value}</p>
                 </div>
               </div>
