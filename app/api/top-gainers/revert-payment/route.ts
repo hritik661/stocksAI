@@ -1,0 +1,89 @@
+import { NextResponse } from "next/server"
+import { cookies } from "next/headers"
+import { neon } from "@neondatabase/serverless"
+
+export async function POST(req: Request) {
+  try {
+    const cookieStore = await cookies()
+    const sessionToken = cookieStore.get('session_token')?.value
+
+    // Dev fallback: allow passing session token in body/header/query if no cookie
+    let devSessionToken: string | null = null
+    if (!sessionToken && process.env.NODE_ENV !== 'production') {
+      try {
+        const body = await req.json()
+        devSessionToken = body?.session_token || null
+      } catch {}
+      devSessionToken = devSessionToken || req.headers.get('x-session-token') || null
+      try {
+        const url = new URL(req.url)
+        devSessionToken = devSessionToken || url.searchParams.get('session_token') || null
+      } catch {}
+      const auth = req.headers.get('authorization') || req.headers.get('Authorization')
+      if (!devSessionToken && auth?.startsWith('Bearer ')) devSessionToken = auth.slice(7)
+    }
+
+    const token = sessionToken || devSessionToken
+    if (!token) return NextResponse.json({ error: "Unauthorized - No session token" }, { status: 401 })
+
+    const databaseUrl = process.env.DATABASE_URL
+    const useDatabase = databaseUrl && !databaseUrl.includes('dummy')
+    const sql = useDatabase ? neon(databaseUrl!) : null
+    let user: any
+
+    const isLocalToken = token.startsWith('local')
+    if (useDatabase && sql && !isLocalToken) {
+      const userRows = await sql`
+        SELECT u.id, u.email, u.name, u.is_top_gainer_paid
+        FROM user_sessions s
+        JOIN users u ON u.id = s.user_id
+        WHERE s.session_token = ${token}
+        LIMIT 1
+      `
+      if (!userRows?.length) return NextResponse.json({ error: "Unauthorized - User not found" }, { status: 401 })
+      user = userRows[0]
+    } else {
+      const parts = token.split(':')
+      if (parts.length >= 2 && parts[0] === 'local') {
+        const userEmail = parts[1]
+        user = { id: userEmail, email: userEmail, name: userEmail.split('@')[0], is_top_gainer_paid: false }
+      } else {
+        return NextResponse.json({ error: "Unauthorized - Invalid session" }, { status: 401 })
+      }
+    }
+
+    // Check if user has top gainer access
+    if (!user.is_top_gainer_paid) {
+      return NextResponse.json({ error: "User does not have top gainer access to revert" }, { status: 400 })
+    }
+
+    // Revert the top gainer payment
+    if (useDatabase && sql) {
+      try {
+        // Set is_top_gainer_paid back to false
+        await sql`UPDATE users SET is_top_gainer_paid = false WHERE id = ${user.id}`
+        
+        console.log('🔄 [REVERT-PAYMENT] Reverted top gainer payment for user:', user.id)
+        
+        return NextResponse.json({ 
+          success: true, 
+          message: "Top gainer payment has been reverted. Please make a new payment to access top gainers.",
+          user: {
+            id: user.id,
+            email: user.email,
+            isTopGainerPaid: false
+          }
+        })
+      } catch (err) {
+        console.error('[REVERT-PAYMENT] DB error:', err)
+        return NextResponse.json({ error: "Failed to revert payment", details: err instanceof Error ? err.message : String(err) }, { status: 500 })
+      }
+    }
+
+    return NextResponse.json({ error: "Database not configured" }, { status: 500 })
+
+  } catch (error) {
+    console.error('[REVERT-PAYMENT] Error:', error)
+    return NextResponse.json({ error: "Internal server error", details: error instanceof Error ? error.message : String(error) }, { status: 500 })
+  }
+}

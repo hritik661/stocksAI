@@ -45,7 +45,7 @@ export default function TopGainersPage() {
 
       if (res.ok) {
         const data = await res.json()
-        const paid = data?.user?.isPredictionPaid === true
+        const paid = data?.user?.isTopGainerPaid === true
         console.log('✅ Payment status refreshed:', paid)
         setVerifiedPaymentStatus(paid)
         
@@ -108,7 +108,7 @@ export default function TopGainersPage() {
 
         if (res.ok) {
           const data = await res.json()
-          const paid = data?.user?.isPredictionPaid === true
+          const paid = data?.user?.isTopGainerPaid === true
           console.log('✅ Payment verified from server:', paid)
           setVerifiedPaymentStatus(paid)
 
@@ -206,12 +206,37 @@ export default function TopGainersPage() {
         )}
 
         <main className="container mx-auto px-3 py-4 md:px-4 md:py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
-              <TrendingUp className="h-8 w-8 md:h-10 md:w-10 text-primary" />
-              Top Gainer Stocks
-            </h1>
-            <p className="text-muted-foreground">Real-time stocks showing highest gains today</p>
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
+                <TrendingUp className="h-8 w-8 md:h-10 md:w-10 text-primary" />
+                Top Gainer Stocks
+              </h1>
+              <p className="text-muted-foreground">Real-time stocks showing highest gains today</p>
+            </div>
+            <button
+              onClick={async () => {
+                try {
+                  const res = await fetch('/api/top-gainers/revert-payment', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                  })
+                  if (res.ok) {
+                    const data = await res.json()
+                    alert('Payment has been reverted. Please make a new payment to access top gainers.')
+                    window.location.href = '/top-gainers'
+                  } else {
+                    const err = await res.json()
+                    alert(err.error || 'Failed to revert payment')
+                  }
+                } catch (err) {
+                  alert('Error reverting payment. Please try again.')
+                }
+              }}
+              className="px-4 py-2 rounded-lg bg-red-600/80 hover:bg-red-700 text-white font-bold text-sm md:text-base transition"
+            >
+              Revert Payment
+            </button>
           </div>
 
           {loadingGainers ? (
@@ -362,7 +387,7 @@ export default function TopGainersPage() {
                 onClick={async () => {
                   try {
                     console.log('🎬 Payment button clicked...')
-                    const res = await fetch('/api/predictions/create-payment', { method: 'POST' })
+                    const res = await fetch('/api/top-gainers/create-payment', { method: 'POST' })
                     const data = await res.json()
                     if (!res.ok) {
                       alert(`Payment error: ${data.error || 'Unknown error'}`)

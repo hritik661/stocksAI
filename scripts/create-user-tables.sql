@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
   name VARCHAR(255),
   balance NUMERIC(15, 2) DEFAULT 1000000,
   is_prediction_paid BOOLEAN DEFAULT FALSE,
+  is_top_gainer_paid BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );
