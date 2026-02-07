@@ -91,6 +91,17 @@ export default function TopGainersPage() {
       }
 
       try {
+        // If our auth context already indicates the user has access, trust it and skip network call
+        if (user && (user as any).isTopGainerPaid) {
+          console.log('🔍 Auth context indicates top gainer access - skipping server verify')
+          setVerifiedPaymentStatus(true)
+          if (searchParams.get('from') === 'payment' || searchParams.get('success') === 'paid') {
+            setShowPaymentSuccessModal(true)
+          }
+          setAuthReady(true)
+          return
+        }
+
         console.log('🔍 Verifying payment status from server...')
         const controller = new AbortController()
         const timeout = setTimeout(() => controller.abort(), 8000)
