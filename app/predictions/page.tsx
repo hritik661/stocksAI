@@ -20,46 +20,37 @@ export default function PredictionsPage() {
   const [verifiedPaymentStatus, setVerifiedPaymentStatus] = useState<boolean | null>(null)
   const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false)
   const [showNews, setShowNews] = useState(true)
-  const [isRefreshingPayment, setIsRefreshingPayment] = useState(false)
 
   // Function to verify payment status (can be called manually or automatically)
-  const verifyPayment = async () => {
-    if (isRefreshingPayment || !user) return
+  const verifyPaymentStatus = async () => {
+    if (!user) return
     
-    setIsRefreshingPayment(true)
     try {
-      console.log('🔄 Manually refreshing payment status...')
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 8000)
-
+      console.log('🔄 Verifying payment status...')
       const res = await fetch('/api/auth/me?t=' + Date.now(), {
         method: 'GET',
         cache: 'no-store',
-        signal: controller.signal,
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
           'Expires': '0'
         }
       })
-      clearTimeout(timeout)
 
       if (res.ok) {
         const data = await res.json()
         const paid = data?.user?.isPredictionPaid === true
-        console.log('✅ Payment status refreshed:', paid)
+        console.log('✅ Payment status verified:', paid)
         setVerifiedPaymentStatus(paid)
         
         if (paid) {
           setShowPaymentSuccessModal(true)
         }
       } else {
-        console.error('⚠️ Refresh failed with status:', res.status)
+        console.error('⚠️ Verification failed with status:', res.status)
       }
     } catch (err) {
-      console.error('❌ Payment refresh error:', err)
-    } finally {
-      setIsRefreshingPayment(false)
+      console.error('❌ Payment verification error:', err)
     }
   }
 
@@ -329,29 +320,6 @@ export default function PredictionsPage() {
                   ✕ Cancel
                 </button>
                 <button
-                  onClick={verifyPayment}
-                  disabled={isRefreshingPayment}
-                  className="px-8 py-4 rounded-xl border-2 border-amber-500/50 hover:border-amber-500 hover:bg-amber-500/10 transition font-bold text-lg text-amber-500 disabled:opacity-50"
-                >
-                  {isRefreshingPayment ? '⏳ Checking...' : '🔄 Verify Payment Status'}
-                </button>
-                <button
-                  onClick={async () => {
-                    try {
-                      const res = await fetch('/api/predictions/revert-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
-                      if (res.ok) {
-                        // Silently reload to refresh payment status without alerts
-                        window.location.reload()
-                      }
-                    } catch (err) {
-                      console.error('Revert payment error:', err)
-                    }
-                  }}
-                  className="px-6 py-3 rounded-xl bg-red-600/80 hover:bg-red-700 text-white font-bold text-sm md:text-base transition"
-                >
-                  🔄 Revert Payment
-                </button>
-                <button
                   onClick={async () => {
                     try {
                       console.log('🎬 Payment button clicked...')
@@ -360,6 +328,12 @@ export default function PredictionsPage() {
                       console.log('💳 Payment response:', { status: res.status, data })
                       if (!res.ok) {
                         console.error('❌ Payment API error:', data)
+                        // If user already has access, refresh payment status to show predictions
+                        if (data.error && data.error.includes('already have access')) {
+                          console.log('🔄 User already has access, refreshing payment status...')
+                          await verifyPaymentStatus()
+                          return
+                        }
                         alert(`Payment error: ${data.error || data.details || 'Unknown error'}`)
                         return
                       }
