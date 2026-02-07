@@ -73,7 +73,7 @@ export default function HomePage() {
                 <h1 className="text-lg md:text-xl lg:text-3xl font-black tracking-tighter text-gradient">
                   Market Dashboard
                 </h1>
-                <p className="text-muted-foreground text-xs md:text-sm font-medium">
+                <p className="hidden md:block text-muted-foreground text-xs md:text-sm font-medium">
                   Managing <span className="text-primary font-bold">₹{user.balance.toLocaleString("en-IN")}</span> • <span className="text-emerald-500">Ready to trade</span>
                 </p>
               </div>
@@ -91,7 +91,7 @@ export default function HomePage() {
                     Welcome to Stocks AI!
                   </h2>
                   <div className="flex flex-wrap gap-2">
-                    <Link href="/predictions" className="text-xs font-semibold px-3 py-1.5 rounded-lg text-primary hover:text-primary/80 transition-colors animate-button-pulse hover:animate-none">
+                    <Link href="/predictions" className="text-xs font-semibold px-3 py-1.5 rounded-lg text-primary hover:text-primary/80 transition-colors animate-button-pulse hover:animate-none ring-2 ring-primary/30 ring-offset-2 ring-offset-background">
                       📊 View AI Predictions
                     </Link>
                     <Link href="/about" className="text-xs font-semibold px-3 py-1.5 rounded-lg text-accent hover:text-accent/80 transition-colors">

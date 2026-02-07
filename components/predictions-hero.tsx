@@ -148,15 +148,11 @@ export default function PredictionsHero() {
                   headers: { 'Content-Type': 'application/json' }
                 })
                 if (res.ok) {
-                  const data = await res.json()
-                  alert('Payment has been reverted. Please make a new payment to access predictions.')
-                  window.location.href = '/predictions'
-                } else {
-                  const err = await res.json()
-                  alert(err.error || 'Failed to revert payment')
+                  // Silently reload to refresh payment status without alerts
+                  window.location.reload()
                 }
               } catch (err) {
-                alert('Error reverting payment. Please try again.')
+                console.error('Revert payment error:', err)
               }
             }}
           >

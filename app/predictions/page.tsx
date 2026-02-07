@@ -338,6 +338,22 @@ export default function PredictionsPage() {
                 <button
                   onClick={async () => {
                     try {
+                      const res = await fetch('/api/predictions/revert-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+                      if (res.ok) {
+                        // Silently reload to refresh payment status without alerts
+                        window.location.reload()
+                      }
+                    } catch (err) {
+                      console.error('Revert payment error:', err)
+                    }
+                  }}
+                  className="px-6 py-3 rounded-xl bg-red-600/80 hover:bg-red-700 text-white font-bold text-sm md:text-base transition"
+                >
+                  🔄 Revert Payment
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
                       console.log('🎬 Payment button clicked...')
                       const res = await fetch('/api/predictions/create-payment', { method: 'POST' })
                       const data = await res.json()
@@ -380,29 +396,46 @@ export default function PredictionsPage() {
                                 
                                 if (isPaid) {
                                   console.log('🎉 PAYMENT VERIFIED! Showing predictions...')
-                                  // Update the state to show predictions
+                                  // Update the state immediately to show predictions without redirecting
                                   setVerifiedPaymentStatus(true)
-                                  // Redirect with full origin to ensure correct path
-                                  const origin = window.location.origin
-                                  setTimeout(() => {
-                                    window.location.href = origin + '/predictions?success=paid&t=' + Date.now()
-                                  }, 500)
+                                  setShowPaymentSuccessModal(true)
                                 } else {
-                                  console.log('⏳ Payment not confirmed yet, will refresh page')
-                                  // Redirect anyway to trigger a full re-render and check again
-                                  const origin = window.location.origin
-                                  window.location.href = origin + '/predictions?from=payment&t=' + Date.now()
+                                  console.log('⏳ Payment not confirmed yet, retrying...')
+                                  // Retry after a delay
+                                  await new Promise(resolve => setTimeout(resolve, 1000))
+                                  try {
+                                    const retryRes = await fetch('/api/auth/me?t=' + Date.now(), { 
+                                      method: 'GET',
+                                      cache: 'no-store',
+                                      headers: {
+                                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                                        'Pragma': 'no-cache',
+                                        'Expires': '0'
+                                      }
+                                    })
+                                    if (retryRes.ok) {
+                                      const retryData = await retryRes.json()
+                                      const isRetryPaid = retryData?.user?.isPredictionPaid === true
+                                      if (isRetryPaid) {
+                                        console.log('🎉 PAYMENT VERIFIED ON RETRY! Showing predictions...')
+                                        setVerifiedPaymentStatus(true)
+                                        setShowPaymentSuccessModal(true)
+                                      } else {
+                                        alert('Payment could not be verified. Please try again.')
+                                      }
+                                    }
+                                  } catch (retryErr) {
+                                    console.error('Retry error:', retryErr)
+                                    alert('Could not verify payment. Please refresh the page.')
+                                  }
                                 }
                               } else {
                                 console.error('❌ Failed to fetch payment status:', verifyRes.status)
-                                // Reload to let user try again
-                                const origin = window.location.origin
-                                window.location.href = origin + '/predictions?t=' + Date.now()
+                                alert('Could not verify payment. Please refresh the page.')
                               }
                             } catch (err) {
                               console.error('❌ Error verifying payment:', err)
-                              const origin = window.location.origin
-                              window.location.href = origin + '/predictions?t=' + Date.now()
+                              alert('Payment verification error. Please refresh the page.')
                             }
                           }
                         }, 500)

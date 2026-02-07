@@ -222,15 +222,11 @@ export default function TopGainersPage() {
                     headers: { 'Content-Type': 'application/json' }
                   })
                   if (res.ok) {
-                    const data = await res.json()
-                    alert('Payment has been reverted. Please make a new payment to access top gainers.')
-                    window.location.href = '/top-gainers'
-                  } else {
-                    const err = await res.json()
-                    alert(err.error || 'Failed to revert payment')
+                    // Silently reload to refresh payment status without alerts
+                    window.location.reload()
                   }
                 } catch (err) {
-                  alert('Error reverting payment. Please try again.')
+                  console.error('Revert payment error:', err)
                 }
               }}
               className="px-4 py-2 rounded-lg bg-red-600/80 hover:bg-red-700 text-white font-bold text-sm md:text-base transition"

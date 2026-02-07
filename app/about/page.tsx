@@ -119,49 +119,15 @@ export default function AboutPage() {
 
         {/* About Us Section */}
         <div className="max-w-4xl mx-auto mb-12 md:mb-20">
-          <h2 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8 text-center">About Stocks AI</h2>
+          <h2 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8 text-center">About Premium service</h2>
           
           <div className="space-y-6 md:space-y-8">
            
 
            
 
-            <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-green-500/5 to-emerald-500/5 border border-green-400/20">
-              <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Why Trade with Us?</h3>
-              <ul className="space-y-3 md:space-y-4 text-sm md:text-base text-muted-foreground">
-                <li className="flex gap-3 items-start">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span><strong>Real Market Data:</strong> Track actual NSE stocks with live price updates and accurate market movements</span>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span><strong>AI Predictions:</strong> Advanced ML models predicting stock movements with 85%+ accuracy for select stocks</span>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span><strong>Virtual Trading:</strong> Practice with ₹10,00,000 virtual capital, no real money required</span>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span><strong>Options Trading:</strong> Learn and trade stock options with detailed greeks, P&L calculations, and risk management tools</span>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span><strong>Persistent Portfolio:</strong> Your trades, P&L, and balance sync across devices and sessions</span>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span><strong>Security First:</strong> OAuth authentication, encrypted data, and bank-grade security</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-blue-500/5 to-cyan-500/5 border border-blue-400/20">
-              <h3 className="text-lg md:text-xl font-bold mb-4">Before Everything You Need to Trade</h3>
-              <p className="text-muted-foreground text-sm md:text-base leading-relaxed mb-4">
-                Our comprehensive prediction service is your complete trading companion, designed to help you make informed decisions before every trade. We provide AI-powered stock predictions for 50+ Nifty stocks, identifying top gainer stocks and analyzing market trends. Every prediction comes with confidence scores, growth targets, and actionable insights so you understand exactly what to expect before risking your capital. Our prediction engine analyzes years of historical data combined with real-time market movements to deliver 85%+ accurate predictions. Whether you're tracking momentum plays, value stocks, or seeking the next big gainer, our service covers all trading styles with detailed technical analysis, fundamental insights, and market alerts to keep you ahead of the curve.
-              </p>
-            </div>
+            
+         
 
             <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-yellow-500/5 to-amber-500/5 border border-yellow-400/20">
               <div className="flex items-center gap-3 mb-4">

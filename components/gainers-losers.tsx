@@ -315,11 +315,11 @@ export function GainersLosers() {
                     try {
                       const res = await fetch('/api/predictions/revert-payment', { method: 'POST' })
                       if (res.ok) {
-                        alert('Payment reverted successfully')
+                        // Silently reload to refresh payment status without alerts
                         window.location.reload()
                       }
                     } catch (err) {
-                      alert('Error reverting payment')
+                      console.error('Revert payment error:', err)
                     }
                   }}
                 >
