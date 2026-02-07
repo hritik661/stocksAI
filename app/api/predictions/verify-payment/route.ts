@@ -6,6 +6,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const orderId = searchParams.get('order_id');
+    const apiMode = searchParams.get('api') === '1' || (request.headers.get && request.headers.get('accept')?.includes('application/json'))
     const origin = process.env.NEXT_PUBLIC_APP_ORIGIN || 'https://hritik.vercel.app';
     
     if (!orderId) {
@@ -22,11 +23,13 @@ export async function GET(request: Request) {
     
     if (!orderRows.length) {
       console.log('⚠️ [VERIFY-PAYMENT] Order not found:', orderId);
+      if (apiMode) return NextResponse.json({ verified: false, error: 'order_not_found' }, { status: 404 })
       return NextResponse.redirect(`${origin}/predictions?error=order_not_found&t=${Date.now()}`);
     }
     
     if (orderRows[0].status !== 'paid') {
       console.log('⚠️ [VERIFY-PAYMENT] Payment not verified for order:', orderId, 'Status:', orderRows[0].status);
+      if (apiMode) return NextResponse.json({ verified: false, status: orderRows[0].status }, { status: 200 })
       return NextResponse.redirect(`${origin}/predictions?error=payment_not_verified&t=${Date.now()}`);
     }
 
@@ -37,10 +40,14 @@ export async function GET(request: Request) {
     `;
     
     console.log('✅ [VERIFY-PAYMENT] Payment verified for user:', userId, 'Order:', orderId);
+    if (apiMode) return NextResponse.json({ verified: true, orderId, userId }, { status: 200 })
     return NextResponse.redirect(`${origin}/predictions?success=paid&t=${Date.now()}`);
   } catch (error) {
     console.error('❌ [VERIFY-PAYMENT] Error:', error);
     const origin = process.env.NEXT_PUBLIC_APP_ORIGIN || 'https://hritik.vercel.app';
+    if (request.headers.get && request.headers.get('accept')?.includes('application/json')) {
+      return NextResponse.json({ verified: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 })
+    }
     return NextResponse.redirect(`${origin}/predictions?error=verify_failed&t=${Date.now()}`);
   }
 }

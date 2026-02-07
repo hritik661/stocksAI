@@ -344,77 +344,53 @@ export default function PredictionsPage() {
                       if (data.paymentLink) {
                         console.log('🔗 Opening payment link:', data.paymentLink)
                         const paymentWindow = window.open(data.paymentLink, '_blank', 'width=500,height=700')
-                        
-                        // Check if payment window opened
+
                         if (!paymentWindow) {
                           alert('Please disable your pop-up blocker and try again')
                           return
                         }
-                        
+
                         const checkPayment = setInterval(async () => {
                           if (paymentWindow && paymentWindow.closed) {
                             clearInterval(checkPayment)
-                            console.log('✅ Payment window closed, verifying payment status...')
-                            // Wait 1 second for payment to process on backend
-                            await new Promise(resolve => setTimeout(resolve, 1000))
-                            
+                            console.log('✅ Payment window closed, attempting server-side verify via orderId...')
+                            // Prefer calling verify-payment with order id so server checks DB/webhook
+                            const orderId = data.orderId || data.order_id || data.order || null
                             try {
-                              console.log('🔍 Fetching fresh payment status from server...')
-                              // Force fresh data with multiple cache busting methods
-                              const verifyRes = await fetch('/api/auth/me?t=' + Date.now(), { 
-                                method: 'GET',
-                                cache: 'no-store',
-                                headers: {
-                                  'Cache-Control': 'no-cache, no-store, must-revalidate',
-                                  'Pragma': 'no-cache',
-                                  'Expires': '0'
+                              let verified = false
+                              if (orderId) {
+                                const resp = await fetch(`/api/predictions/verify-payment?order_id=${encodeURIComponent(orderId)}&api=1`, { headers: { Accept: 'application/json' } })
+                                if (resp.ok) {
+                                  const json = await resp.json()
+                                  console.log('🔎 verify-payment response:', json)
+                                  verified = !!json.verified
                                 }
-                              })
-                              
-                              console.log('📡 Server response status:', verifyRes.status)
-                              if (verifyRes.ok) {
-                                const verifyData = await verifyRes.json()
-                                console.log('📊 User data from server:', verifyData)
-                                const isPaid = verifyData?.user?.isPredictionPaid === true
-                                console.log('💰 Payment status:', isPaid ? 'PAID ✅' : 'UNPAID ❌')
-                                
-                                if (isPaid) {
-                                  console.log('🎉 PAYMENT VERIFIED! Showing predictions...')
-                                  setVerifiedPaymentStatus(true)
-                                  setShowPaymentSuccessModal(true)
-                                } else {
-                                  console.log('⏳ Payment not confirmed yet, retrying in 2 seconds...')
-                                  // Retry after longer delay
-                                  await new Promise(resolve => setTimeout(resolve, 2000))
-                                  try {
-                                    const retryRes = await fetch('/api/auth/me?t=' + Date.now(), { 
-                                      method: 'GET',
-                                      cache: 'no-store',
-                                      headers: {
-                                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                                        'Pragma': 'no-cache',
-                                        'Expires': '0'
-                                      }
-                                    })
-                                    if (retryRes.ok) {
-                                      const retryData = await retryRes.json()
-                                      const isRetryPaid = retryData?.user?.isPredictionPaid === true
-                                      if (isRetryPaid) {
-                                        console.log('🎉 PAYMENT VERIFIED ON RETRY! Showing predictions...')
-                                        setVerifiedPaymentStatus(true)
-                                        setShowPaymentSuccessModal(true)
-                                      } else {
-                                        alert('Payment verification pending. Please refresh the page in a moment.')
-                                      }
-                                    }
-                                  } catch (retryErr) {
-                                    console.error('Retry error:', retryErr)
-                                    alert('Could not verify payment. Please refresh the page.')
+                              }
+
+                              // Fallback to auth/me if verify-payment didn't confirm
+                              if (!verified) {
+                                await new Promise(resolve => setTimeout(resolve, 1200))
+                                const verifyRes = await fetch('/api/auth/me?t=' + Date.now(), { 
+                                  method: 'GET',
+                                  cache: 'no-store',
+                                  headers: {
+                                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                                    'Pragma': 'no-cache',
+                                    'Expires': '0'
                                   }
+                                })
+                                if (verifyRes.ok) {
+                                  const verifyData = await verifyRes.json()
+                                  verified = verifyData?.user?.isPredictionPaid === true
                                 }
+                              }
+
+                              if (verified) {
+                                console.log('🎉 PAYMENT VERIFIED! Showing predictions...')
+                                setVerifiedPaymentStatus(true)
+                                setShowPaymentSuccessModal(true)
                               } else {
-                                console.error('❌ Failed to fetch payment status:', verifyRes.status)
-                                alert('Could not verify payment. Please refresh the page.')
+                                alert('Payment verification pending. Please refresh the page in a moment.')
                               }
                             } catch (err) {
                               console.error('❌ Error verifying payment:', err)
