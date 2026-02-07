@@ -271,8 +271,34 @@ export function GainersLosers() {
                                 }
                               }
 
-                              alert('Payment verification in progress. Please refresh the page.')
-                              window.location.href = '/'
+                              // Poll /api/auth/me for up to ~15 seconds to allow webhook/db update
+                              let paymentConfirmed = false
+                              for (let attempt = 0; attempt < 6; attempt++) {
+                                await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)))
+                                try {
+                                  const pollRes = await fetch('/api/auth/me?t=' + Date.now(), { cache: 'no-store', credentials: 'include' })
+                                  if (pollRes.ok) {
+                                    const pollData = await pollRes.json()
+                                    if (pollData?.user?.isTopGainerPaid) {
+                                      paymentConfirmed = true
+                                      if (setUserFromData && pollData.user) setUserFromData(pollData.user)
+                                      setShowSuccessModal(true)
+                                      setTimeout(() => {
+                                        window.location.href = '/top-gainers?from=payment&success=true'
+                                      }, 2000)
+                                      break
+                                    }
+                                  }
+                                } catch (e) {
+                                  // ignore transient poll errors
+                                }
+                              }
+
+                              if (!paymentConfirmed) {
+                                // If still not confirmed, redirect to top-gainers page where user can retry/refresh
+                                alert('Payment verification delayed. Please refresh the Top Gainers page if access does not appear.')
+                                window.location.href = '/top-gainers'
+                              }
                             }
                           } catch (err) {
                             console.error('Payment verification error:', err)
