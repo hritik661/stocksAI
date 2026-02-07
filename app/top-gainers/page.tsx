@@ -375,18 +375,22 @@ export default function TopGainersPage() {
                 ✕ Cancel
               </button>
               <button
-                onClick={verifyPayment}
-                disabled={isRefreshingPayment}
-                className="px-8 py-4 rounded-xl border-2 border-amber-500/50 hover:border-amber-500 hover:bg-amber-500/10 transition font-bold text-lg text-amber-500 disabled:opacity-50"
-              >
-                {isRefreshingPayment ? '⏳ Checking...' : '🔄 Verify Payment'}
-              </button>
-              <button
                 onClick={async () => {
                   try {
                     console.log('🎬 Payment button clicked...')
-                    const res = await fetch('/api/top-gainers/create-payment', { method: 'POST' })
+                    const res = await fetch('/api/top-gainers/create-payment', { 
+                      method: 'POST',
+                      credentials: 'include'
+                    })
                     const data = await res.json()
+                    
+                    // Check if user already has access
+                    if (data.alreadyPaid) {
+                      alert('You already have access to top gainers!')
+                      window.location.href = '/top-gainers'
+                      return
+                    }
+                    
                     if (!res.ok) {
                       alert(`Payment error: ${data.error || 'Unknown error'}`)
                       return

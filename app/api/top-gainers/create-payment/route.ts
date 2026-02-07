@@ -34,15 +34,44 @@ export async function POST(req: Request) {
 
     const isLocalToken = token.startsWith('local')
     if (useDatabase && sql && !isLocalToken) {
-      const userRows = await sql`
-        SELECT u.id, u.email, u.name, u.is_top_gainer_paid
-        FROM user_sessions s
-        JOIN users u ON u.id = s.user_id
-        WHERE s.session_token = ${token}
-        LIMIT 1
-      `
-      if (!userRows?.length) return NextResponse.json({ error: "Unauthorized - User not found" }, { status: 401 })
-      user = userRows[0]
+      try {
+        // Try with is_top_gainer_paid column first
+        const userRows = await sql`
+          SELECT u.id, u.email, u.name, u.is_top_gainer_paid
+          FROM user_sessions s
+          JOIN users u ON u.id = s.user_id
+          WHERE s.session_token = ${token}
+          LIMIT 1
+        `
+        if (userRows?.length) {
+          user = userRows[0]
+        }
+      } catch (columnError: any) {
+        // If is_top_gainer_paid column doesn't exist, query without it
+        if (columnError?.message?.includes('is_top_gainer_paid') || columnError?.message?.includes('does not exist')) {
+          console.warn('[CREATE-PAYMENT] Column is_top_gainer_paid does not exist, querying without it')
+          try {
+            const userRows = await sql`
+              SELECT u.id, u.email, u.name
+              FROM user_sessions s
+              JOIN users u ON u.id = s.user_id
+              WHERE s.session_token = ${token}
+              LIMIT 1
+            `
+            if (userRows?.length) {
+              user = { ...userRows[0], is_top_gainer_paid: false }
+            }
+          } catch (fallbackError) {
+            console.error('[CREATE-PAYMENT] Fallback query failed:', fallbackError)
+            return NextResponse.json({ error: "Unauthorized - User not found" }, { status: 401 })
+          }
+        } else {
+          console.error('[CREATE-PAYMENT] Unexpected database error:', columnError)
+          return NextResponse.json({ error: "Unauthorized - User not found" }, { status: 401 })
+        }
+      }
+      
+      if (!user) return NextResponse.json({ error: "Unauthorized - User not found" }, { status: 401 })
     } else {
       const parts = token.split(':')
       if (parts.length >= 2 && parts[0] === 'local') {
@@ -53,7 +82,14 @@ export async function POST(req: Request) {
       }
     }
 
-    if (useDatabase && user.is_top_gainer_paid) return NextResponse.json({ error: "Already have access to top gainers.." }, { status: 400 })
+    if (useDatabase && user.is_top_gainer_paid) {
+      console.log('✅ [CREATE-PAYMENT] User already has top gainers access:', user.id)
+      return NextResponse.json({ 
+        message: "You already have access to top gainers", 
+        alreadyPaid: true,
+        redirect: '/top-gainers'
+      }, { status: 200 })
+    }
 
     const keyId = process.env.RAZORPAY_KEY_ID
     const keySecret = process.env.RAZORPAY_KEY_SECRET

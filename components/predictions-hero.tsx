@@ -30,8 +30,19 @@ const handlePredictionClick = async (
     }
 
     // Proceed with payment directly
-    const res = await fetch('/api/predictions/create-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+    const res = await fetch('/api/predictions/create-payment', { 
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({}) 
+    });
     const data = await res.json();
+    
+    // Check if user already has access
+    if (data.alreadyPaid) {
+      alert('You already have access to predictions!');
+      return;
+    }
     if (data.paymentLink) {
       const orderId = data.orderId || data.order_id || data.order || null
       const paymentWindow = window.open(
