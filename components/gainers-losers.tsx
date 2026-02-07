@@ -222,6 +222,7 @@ export function GainersLosers() {
                         }
                         setShowSuccessModal(true)
                         setTimeout(() => {
+                          // Always redirect to top gainers list page to show all stocks
                           window.location.href = '/top-gainers?from=payment&success=true'
                         }, 3000)
                         return
@@ -285,6 +286,7 @@ export function GainersLosers() {
                                       if (setUserFromData && pollData.user) setUserFromData(pollData.user)
                                       setShowSuccessModal(true)
                                       setTimeout(() => {
+                                        // Always redirect to top gainers list page to display all stocks
                                         window.location.href = '/top-gainers?from=payment&success=true'
                                       }, 2000)
                                       break
@@ -345,7 +347,7 @@ export function GainersLosers() {
             <button
               onClick={() => {
                 setShowSuccessModal(false)
-                window.location.href = '/top-gainers'
+                window.location.href = '/top-gainers?from=payment&success=true'
               }}
               className="w-full px-4 py-3 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold transition text-sm md:text-base"
             >

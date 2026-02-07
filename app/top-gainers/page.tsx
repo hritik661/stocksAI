@@ -208,11 +208,12 @@ export default function TopGainersPage() {
               <button
                 onClick={() => {
                   setShowPaymentSuccessModal(false)
-                  router.replace('/top-gainers')
+                  // Redirect to top gainers list to view all stocks
+                  window.location.href = '/top-gainers?from=payment&success=true'
                 }}
                 className="px-6 py-3 rounded-lg bg-gradient-to-r from-primary to-accent text-white font-bold"
               >
-                OK
+                OK, View All Gainers
               </button>
             </div>
           </div>
