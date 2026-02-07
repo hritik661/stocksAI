@@ -212,6 +212,4 @@ export async function POST(req: Request) {
       error: error instanceof Error ? error.message : String(error)
     })
   }
-    return NextResponse.json({ error: "Internal server error", details: error instanceof Error ? error.message : String(error) }, { status: 500 })
-  }
 }
