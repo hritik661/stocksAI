@@ -26,7 +26,7 @@ export function GainersLosers() {
   const TOP_COUNT = 100 // Show top 100 gainers/losers
 
   // Check if user has paid for Top Gainers access
-  const hasTopGainersAccess = user?.isTopGainersPaid === true
+  const hasTopGainersAccess = user?.isTopGainerPaid === true
 
   // Check if user came back from successful payment
   useEffect(() => {
@@ -174,8 +174,8 @@ export function GainersLosers() {
                       return
                     }
 
-                    // Create payment link
-                    const res = await fetch('/api/predictions/create-payment', { 
+                    // Create payment link for top gainers
+                    const res = await fetch('/api/top-gainers/create-payment', { 
                       method: 'POST',
                       credentials: 'include'
                     })
@@ -198,13 +198,16 @@ export function GainersLosers() {
                             if (verifyRes.ok) {
                               const userData = await verifyRes.json()
                               
-                              if (userData?.user?.isTopGainersPaid) {
-                                // Payment successful - update auth and redirect
+                              if (userData?.user?.isTopGainerPaid) {
+                                // Payment successful - update auth context
                                 if (setUserFromData && userData.user) {
                                   setUserFromData(userData.user)
                                 }
-                                // Redirect to home page with success params
-                                window.location.href = '/?from=top-gainers-payment&success=true'
+                                // Show success modal then redirect
+                                setShowSuccessModal(true)
+                                setTimeout(() => {
+                                  window.location.href = '/top-gainers?from=payment&success=true'
+                                }, 3000)
                                 return
                               }
 
@@ -213,11 +216,14 @@ export function GainersLosers() {
                               if (hostname === 'localhost' || hostname === '127.0.0.1') {
                                 try {
                                   if (setUserFromData) {
-                                    const patchedUser = { ...(user || {}), isTopGainersPaid: true }
+                                    const patchedUser = { ...(user || {}), isTopGainerPaid: true }
                                     setUserFromData(patchedUser)
                                   }
                                   localStorage.setItem('topgainers_access', 'true')
-                                  window.location.href = '/?from=top-gainers-payment&success=true&local=true'
+                                  setShowSuccessModal(true)
+                                  setTimeout(() => {
+                                    window.location.href = '/top-gainers?from=payment&success=true&local=true'
+                                  }, 3000)
                                   return
                                 } catch (e) {
                                   // fallback
@@ -266,10 +272,13 @@ export function GainersLosers() {
                 <Check className="h-6 w-6 text-emerald-400" />
               </div>
             </div>
-            <h2 className="text-2xl md:text-3xl font-extrabold mb-2 text-emerald-400">🎉 Welcome One!</h2>
-            <p className="text-sm md:text-base text-muted-foreground mb-6">Welcome to Top Gainers Premium! You now have access to detailed analysis of top performing stocks. Happy trading!</p>
+            <h2 className="text-2xl md:text-3xl font-extrabold mb-2 text-emerald-400">🎉 Welcome to Top Gainers Service!</h2>
+            <p className="text-sm md:text-base text-muted-foreground mb-6">Your payment was successful. You now have lifetime access to top gainer analysis. Let's start trading smart!</p>
             <button
-              onClick={() => setShowSuccessModal(false)}
+              onClick={() => {
+                setShowSuccessModal(false)
+                window.location.href = '/top-gainers'
+              }}
               className="w-full px-4 py-3 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold transition text-sm md:text-base"
             >
               OK, Show Me Top Gainers
