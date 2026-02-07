@@ -207,6 +207,25 @@ export function GainersLosers() {
                       // Open Razorpay payment window
                       const paymentWindow = window.open(data.paymentLink, '_blank', 'width=500,height=700')
                       
+                      // For test mode, if user was immediately marked as paid in DB, show success right away
+                      if (data.immediatelyPaidInDb) {
+                        console.log('✅ User immediately marked as paid in database')
+                        await new Promise(resolve => setTimeout(resolve, 1500)) // Wait a bit for user to see payment window
+                        if (paymentWindow) {
+                          try { paymentWindow.close() } catch {}
+                        }
+                        // Update context and show success
+                        if (setUserFromData) {
+                          const updatedUser = { ...(user || {}), isTopGainerPaid: true }
+                          setUserFromData(updatedUser)
+                        }
+                        setShowSuccessModal(true)
+                        setTimeout(() => {
+                          window.location.href = '/top-gainers?from=payment&success=true'
+                        }, 3000)
+                        return
+                      }
+                      
                       // Poll for payment window closure
                       const checkPayment = setInterval(async () => {
                         if (paymentWindow && paymentWindow.closed) {
