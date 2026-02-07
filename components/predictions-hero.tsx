@@ -143,20 +143,38 @@ export default function PredictionsHero() {
             className="bg-red-600/80 text-white px-3 py-1 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl font-bold shadow-lg hover:bg-red-700 transition text-xs sm:text-lg"
             onClick={async () => {
               try {
+                const ok = confirm('Are you sure you want to revoke prediction access? You will need to pay again to regain access.')
+                if (!ok) return
+
                 const res = await fetch('/api/predictions/revert-payment', { 
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' }
                 })
-                if (res.ok) {
-                  // Silently reload to refresh payment status without alerts
-                  window.location.reload()
+                if (!res.ok) {
+                  const err = await res.json().catch(() => ({}))
+                  alert(err?.error || 'Failed to revert payment')
+                  return
+                }
+
+                // Don't reload or log out. Instead, prompt user to pay again immediately.
+                // Update local auth state to reflect revoked access (if possible)
+                try {
+                  const json = await res.json()
+                  if (json?.user && setUserFromData) setUserFromData(json.user)
+                } catch (e) {}
+
+                // Start payment flow so user can repurchase access
+                try {
+                  await handlePredictionClick(setShowModal, markPredictionsAsPaid, setUserFromData, user)
+                } catch (e) {
+                  console.error('Failed to start payment after revert:', e)
                 }
               } catch (err) {
                 console.error('Revert payment error:', err)
               }
             }}
           >
-            Revert Payment
+            Revoke & Repurchase
           </button>
         </div>
 
