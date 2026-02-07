@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       path: '/', 
       sameSite: 'lax', 
       maxAge: 60 * 60 * 24 * 30,
-      secure: process.env.NODE_ENV === 'production'
+      secure: true
     })
     console.log('[LOGIN-PASSWORD] ✅ Session token cookie set for user:', u.email)
     return res

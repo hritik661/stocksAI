@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const res = await fetch("/api/auth/me", { 
           method: "GET",
           cache: 'no-store',
+          credentials: 'include', // CRITICAL: Include cookies in the fetch
           headers: {
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Pragma': 'no-cache',
@@ -52,13 +53,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             console.log('[AUTH] ✅ Session found, user logged in:', data.user.email)
             setUser(data.user)
           } else {
-            console.log('[AUTH] ⚠️ No user data in response')
+            console.log('[AUTH] ⚠️ No user data in response, proceeding as guest')
+            setUser(null)
           }
         } else {
-          console.log('[AUTH] ⚠️ Not logged in or session expired (status:', res.status + ')')
+          console.log('[AUTH] ℹ️ No session found (status:', res.status + '), user is guest')
+          setUser(null)
         }
       } catch (err) {
         console.error('[AUTH] ❌ Error initializing auth:', err)
+        setUser(null)
       } finally {
         setIsLoading(false)
       }

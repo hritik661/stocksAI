@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
       path: '/',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 30, // 30 days
-      secure: process.env.NODE_ENV === 'production'
+      secure: true // Always secure for HTTPS (Vercel prod + localhost HTTPS)
     })
     console.log('[OTP-VERIFY] ✅ Session token cookie set, expires in 30 days')
     return response
