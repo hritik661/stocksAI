@@ -32,6 +32,7 @@ const handlePredictionClick = async (
     const res = await fetch('/api/predictions/create-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
     const data = await res.json();
     if (data.paymentLink) {
+      const orderId = data.orderId || data.order_id || data.order || null
       const paymentWindow = window.open(
         data.paymentLink,
         '_blank',
@@ -41,43 +42,45 @@ const handlePredictionClick = async (
       const checkPayment = setInterval(async () => {
         if (paymentWindow && paymentWindow.closed) {
           clearInterval(checkPayment);
-          // Wait for webhook to process
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          // Verify payment and redirect
+          // Try server-side verify by orderId first so webhook or DB is authoritative
           try {
-            const verifyRes = await fetch(`/api/auth/me?t=${Date.now()}`, { cache: 'no-store' })
-            if (verifyRes.ok) {
-              const userData = await verifyRes.json()
-              if (userData?.user?.isPredictionPaid) {
-                // Payment successful - update auth and redirect
-                if (markPredictionsAsPaid) markPredictionsAsPaid()
-                if (setUserFromData && userData.user) setUserFromData(userData.user)
-                window.location.href = '/predictions?from=payment&success=true'
-                return
-              }
-
-              // If running locally the webhook may not be reachable. Provide a local fallback:
-              const hostname = typeof window !== 'undefined' ? window.location.hostname : ''
-              if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                // mark user locally as having access so predictions show immediately in dev
-                try {
-                  if (setUserFromData) {
-                    const patchedUser = { ...(currentUser || {}), isPredictionPaid: true }
-                    setUserFromData(patchedUser)
-                  }
-                  try { localStorage.setItem('predictions_access', 'true') } catch {}
-                  // redirect back to predictions and show list
-                  window.location.href = '/predictions?from=payment&success=true&local=true'
-                  return
-                } catch (e) {
-                  // fallback to normal redirect
+            let verified = false
+            if (orderId) {
+              try {
+                const v = await fetch(`/api/predictions/verify-payment?order_id=${encodeURIComponent(orderId)}&api=1`, { headers: { Accept: 'application/json' } })
+                if (v.ok) {
+                  const json = await v.json()
+                  if (json?.verified) verified = true
                 }
+              } catch (err) {
+                console.warn('[PREDICTION] verify-payment api failed', err)
               }
-
-              alert('Payment verification in progress. Please refresh the page.')
-              window.location.href = '/predictions'
             }
+
+            // Fallback to /api/auth/me if verify-payment didn't confirm
+            if (!verified) {
+              // Give webhook a short grace period then check auth/me
+              await new Promise(resolve => setTimeout(resolve, 1200))
+              const verifyRes = await fetch(`/api/auth/me?t=${Date.now()}`, { cache: 'no-store' })
+              if (verifyRes.ok) {
+                const userData = await verifyRes.json()
+                if (userData?.user?.isPredictionPaid) verified = true
+                if (userData?.user && setUserFromData) setUserFromData(userData.user)
+              }
+            }
+
+            if (verified) {
+              if (markPredictionsAsPaid) markPredictionsAsPaid()
+              // Redirect to predictions so page gating shows full access
+              window.location.href = '/predictions?from=payment&success=true'
+              return
+            }
+
+            // Not verified yet
+            alert('Payment verification pending. Please refresh the page in a moment.')
+            window.location.href = '/predictions'
           } catch (e) {
+            console.error('Payment verification failed:', e)
             alert('Payment verification failed. Redirecting to predictions...');
             window.location.href = '/predictions'
           }
