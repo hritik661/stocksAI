@@ -27,13 +27,33 @@ export async function GET(request: NextRequest) {
     if (!useDatabase) return NextResponse.json({ success: false }, { status: 401 })
 
     const sql = neon(process.env.DATABASE_URL!)
-    const rows = await sql`
-      SELECT u.id, u.email, u.name, u.balance, u.is_prediction_paid, u.is_top_gainer_paid
-      FROM user_sessions s
-      JOIN users u ON u.id = s.user_id
-      WHERE s.session_token = ${token}
-      LIMIT 1
-    `
+    
+    let rows: any[] = []
+    
+    // Try with is_top_gainer_paid column first
+    try {
+      rows = await sql`
+        SELECT u.id, u.email, u.name, u.balance, u.is_prediction_paid, u.is_top_gainer_paid
+        FROM user_sessions s
+        JOIN users u ON u.id = s.user_id
+        WHERE s.session_token = ${token}
+        LIMIT 1
+      `
+    } catch (columnError: any) {
+      // If is_top_gainer_paid column doesn't exist, query without it
+      if (columnError?.message?.includes('is_top_gainer_paid') || columnError?.message?.includes('does not exist')) {
+        console.warn('[AUTH-ME] Column is_top_gainer_paid does not exist, querying without it')
+        rows = await sql`
+          SELECT u.id, u.email, u.name, u.balance, u.is_prediction_paid
+          FROM user_sessions s
+          JOIN users u ON u.id = s.user_id
+          WHERE s.session_token = ${token}
+          LIMIT 1
+        `
+      } else {
+        throw columnError
+      }
+    }
 
     if (!rows || rows.length === 0) return NextResponse.json({ success: false }, { status: 401 })
 
