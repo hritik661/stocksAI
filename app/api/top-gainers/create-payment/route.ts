@@ -36,21 +36,22 @@ export async function POST(req: Request) {
     if (useDatabase && sql && !isLocalToken) {
       try {
         // Try with is_top_gainer_paid column first
-        const userRows = await sql`
-          SELECT u.id, u.email, u.name, u.is_top_gainer_paid
-          FROM user_sessions s
-          JOIN users u ON u.id = s.user_id
-          WHERE s.session_token = ${token}
-          LIMIT 1
-        `
-        if (userRows?.length) {
-          user = userRows[0]
-        }
-      } catch (columnError: any) {
-        // If is_top_gainer_paid column doesn't exist, query without it
-        if (columnError?.message?.includes('is_top_gainer_paid') || columnError?.message?.includes('does not exist')) {
-          console.warn('[CREATE-PAYMENT] Column is_top_gainer_paid does not exist, querying without it')
-          try {
+        try {
+          const userRows = await sql`
+            SELECT u.id, u.email, u.name, u.is_top_gainer_paid
+            FROM user_sessions s
+            JOIN users u ON u.id = s.user_id
+            WHERE s.session_token = ${token}
+            LIMIT 1
+          `
+          if (userRows?.length) {
+            user = userRows[0]
+          }
+        } catch (columnError: any) {
+          const errorMsg = columnError?.message || String(columnError)
+          // If is_top_gainer_paid column doesn't exist, query without it
+          if (errorMsg.includes('is_top_gainer_paid') || errorMsg.includes('does not exist') || errorMsg.includes('unknown identifier')) {
+            console.warn('[CREATE-PAYMENT] Column is_top_gainer_paid does not exist, querying without it')
             const userRows = await sql`
               SELECT u.id, u.email, u.name
               FROM user_sessions s
@@ -61,17 +62,20 @@ export async function POST(req: Request) {
             if (userRows?.length) {
               user = { ...userRows[0], is_top_gainer_paid: false }
             }
-          } catch (fallbackError) {
-            console.error('[CREATE-PAYMENT] Fallback query failed:', fallbackError)
-            return NextResponse.json({ error: "Unauthorized - User not found" }, { status: 401 })
+          } else {
+            console.error('[CREATE-PAYMENT] Unexpected database error:', columnError)
+            throw columnError
           }
-        } else {
-          console.error('[CREATE-PAYMENT] Unexpected database error:', columnError)
+        }
+        
+        if (!user) {
+          console.warn('[CREATE-PAYMENT] User not found for token:', token?.slice(0, 10))
           return NextResponse.json({ error: "Unauthorized - User not found" }, { status: 401 })
         }
+      } catch (dbError: any) {
+        console.error('[CREATE-PAYMENT] Database error after all attempts:', dbError)
+        return NextResponse.json({ error: "Database error - User lookup failed" }, { status: 401 })
       }
-      
-      if (!user) return NextResponse.json({ error: "Unauthorized - User not found" }, { status: 401 })
     } else {
       const parts = token.split(':')
       if (parts.length >= 2 && parts[0] === 'local') {

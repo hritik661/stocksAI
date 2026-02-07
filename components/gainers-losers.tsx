@@ -179,7 +179,29 @@ export function GainersLosers() {
                       method: 'POST',
                       credentials: 'include'
                     })
+                    
+                    if (!res.ok) {
+                      let errorMsg = `Server error: ${res.status}`
+                      try {
+                        const errData = await res.json()
+                        if (errData?.error) errorMsg = errData.error
+                        if (errData?.details) errorMsg += ` - ${errData.details}`
+                      } catch {}
+                      console.error('Payment creation failed:', errorMsg)
+                      alert(`Payment error: ${errorMsg}`)
+                      setProcessingPayment(false)
+                      return
+                    }
+                    
                     const data = await res.json()
+                    
+                    // Check if user already has access
+                    if (data.alreadyPaid) {
+                      alert('You already have access to top gainers!')
+                      window.location.href = '/top-gainers'
+                      setProcessingPayment(false)
+                      return
+                    }
                     
                     if (data.paymentLink) {
                       // Open Razorpay payment window
@@ -243,8 +265,8 @@ export function GainersLosers() {
                         }
                       }, 500)
                     } else {
-                      console.error('No payment link received')
-                      alert(data.error || 'Unable to generate payment link')
+                      console.error('No payment link received:', data)
+                      alert(data.error || 'Unable to generate payment link. Please try again.')
                       setProcessingPayment(false)
                     }
                   } catch (err) {
