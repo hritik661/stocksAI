@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { fetchGainersLosers, type StockQuote } from "@/lib/yahoo-finance"
 import { formatCurrency, formatPercentage } from "@/lib/market-utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button"
 export function GainersLosers() {
   const { user, setUserFromData } = useAuth()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [gainers, setGainers] = useState<StockQuote[]>([])
   const [losers, setLosers] = useState<StockQuote[]>([])
   const [loading, setLoading] = useState(true)
@@ -362,7 +363,7 @@ export function GainersLosers() {
             <Card className="shadow-lg bg-card/50 border-2 border-primary/20 p-1 md:p-2 relative overflow-hidden">
               <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-10 flex items-center justify-center">
                 <button
-                  onClick={() => setShowPaymentGate(true)}
+                  onClick={() => router.push('/top-gainers')}
                   className="px-4 py-2 md:px-6 md:py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg text-sm md:text-base transition"
                 >
                   🔒 Unlock Top Gainers

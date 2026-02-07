@@ -394,18 +394,39 @@ export default function TopGainersPage() {
                       credentials: 'include'
                     })
                     const data = await res.json()
-                    
+
+                    // If API immediately marked user as paid in DB (test/dev), handle it
+                    if (data.immediatelyPaidInDb) {
+                      console.log('✅ Payment API returned immediatelyPaidInDb')
+                      if (setUserFromData) {
+                        // Refresh auth state from server
+                        try {
+                          const meRes = await fetch('/api/auth/me?t=' + Date.now(), { cache: 'no-store', credentials: 'include' })
+                          if (meRes.ok) {
+                            const meData = await meRes.json()
+                            if (meData?.user) setUserFromData(meData.user)
+                          }
+                        } catch (e) {
+                          // ignore
+                        }
+                      }
+                      setVerifiedPaymentStatus(true)
+                      setShowPaymentSuccessModal(true)
+                      return
+                    }
+
                     // Check if user already has access
                     if (data.alreadyPaid) {
                       alert('You already have access to top gainers!')
                       window.location.href = '/top-gainers'
                       return
                     }
-                    
+
                     if (!res.ok) {
                       alert(`Payment error: ${data.error || 'Unknown error'}`)
                       return
                     }
+
                     if (data.paymentLink) {
                       const orderId = data.orderId || data.order_id || data.order || null
                       const paymentWindow = window.open(data.paymentLink, '_blank', 'width=500,height=700')
