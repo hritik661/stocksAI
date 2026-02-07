@@ -42,6 +42,8 @@ export async function POST(request: NextRequest) {
     }
 
     const res = NextResponse.json({ success: true, user: { id: user.id, email: user.email, name: user.name, balance: Number(user.balance), isPredictionPaid: !!user.is_prediction_paid } })
+    
+    // Set cookie using both methods to ensure it works on Vercel
     res.cookies.set('session_token', sessionToken, { 
       httpOnly: true, 
       path: '/', 
@@ -49,6 +51,12 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 30,
       secure: process.env.NODE_ENV === 'production'
     })
+    
+    // Also add explicit Set-Cookie header for maximum compatibility
+    const secureSuffix = process.env.NODE_ENV === 'production' ? '; Secure' : ''
+    const cookieValue = `session_token=${sessionToken}; Path=/; SameSite=Lax; HttpOnly; Max-Age=${60 * 60 * 24 * 30}${secureSuffix}`
+    res.headers.append('Set-Cookie', cookieValue)
+    
     console.log('[SIGNUP-PASSWORD] ✅ Session token cookie set for user:', user.email)
     return res
   } catch (err) {

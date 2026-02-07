@@ -175,7 +175,10 @@ export function GainersLosers() {
                     }
 
                     // Create payment link
-                    const res = await fetch('/api/predictions/create-payment', { method: 'POST' })
+                    const res = await fetch('/api/predictions/create-payment', { 
+                      method: 'POST',
+                      credentials: 'include'
+                    })
                     const data = await res.json()
                     
                     if (data.paymentLink) {

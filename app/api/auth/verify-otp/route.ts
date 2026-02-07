@@ -120,8 +120,11 @@ export async function POST(request: NextRequest) {
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 30, // 30 days
       secure: process.env.NODE_ENV === 'production'
-    })
-    // If database isn't configured (local/dev fallback), also set a readable session_user cookie
+    })    
+    // Also add explicit Set-Cookie header for maximum compatibility on Vercel
+    const secureSuffix = process.env.NODE_ENV === 'production' ? '; Secure' : ''
+    const cookieValue = `session_token=${sessionToken}; Path=/; SameSite=Lax; HttpOnly; Max-Age=${60 * 60 * 24 * 30}${secureSuffix}`
+    res.headers.append('Set-Cookie', cookieValue)    // If database isn't configured (local/dev fallback), also set a readable session_user cookie
     // so the client can persist a lightweight user object across refreshes.
     if (!useDatabase) {
       try {

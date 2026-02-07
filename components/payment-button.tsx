@@ -18,6 +18,7 @@ export function PaymentButton() {
       const authCheck = await fetch('/api/auth/me?t=' + Date.now(), {
         method: 'GET',
         cache: 'no-store',
+        credentials: 'include',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
@@ -33,6 +34,7 @@ export function PaymentButton() {
       
       const response = await fetch('/api/predictions/create-payment', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({})
       })
