@@ -36,13 +36,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Initialize by asking the server who the current session belongs to.
     const initializeAuth = async () => {
       try {
-        const res = await fetch("/api/auth/me", { method: "GET" })
+        console.log('[AUTH] Initializing auth - checking for existing session')
+        const res = await fetch("/api/auth/me", { 
+          method: "GET",
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        })
         if (res.ok) {
           const data = await res.json()
-          if (data?.user) setUser(data.user)
+          if (data?.user) {
+            console.log('[AUTH] ✅ Session found, user logged in:', data.user.email)
+            setUser(data.user)
+          } else {
+            console.log('[AUTH] ⚠️ No user data in response')
+          }
+        } else {
+          console.log('[AUTH] ⚠️ Not logged in or session expired (status:', res.status + ')')
         }
       } catch (err) {
-        // ignore
+        console.error('[AUTH] ❌ Error initializing auth:', err)
       } finally {
         setIsLoading(false)
       }

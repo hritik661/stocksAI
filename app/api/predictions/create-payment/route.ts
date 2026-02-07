@@ -53,7 +53,15 @@ export async function POST(req: Request) {
       }
     }
 
-    if (useDatabase && user.is_prediction_paid) return NextResponse.json({ error: "Already have access to predictions Stocks.." }, { status: 400 })
+    // If user already has access, just return success instead of error
+    if (useDatabase && user.is_prediction_paid) {
+      console.log('✅ [CREATE-PAYMENT] User already has prediction access:', user.id)
+      return NextResponse.json({ 
+        message: "You already have access to predictions", 
+        alreadyPaid: true,
+        redirect: '/predictions'
+      }, { status: 200 })
+    }
 
     const keyId = process.env.RAZORPAY_KEY_ID
     const keySecret = process.env.RAZORPAY_KEY_SECRET

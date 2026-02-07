@@ -326,26 +326,37 @@ export default function PredictionsPage() {
                       const res = await fetch('/api/predictions/create-payment', { method: 'POST' })
                       const data = await res.json()
                       console.log('💳 Payment response:', { status: res.status, data })
+                      
+                      // Handle "already paid" response
+                      if (data.alreadyPaid) {
+                        console.log('✅ User already has access, showing predictions now...')
+                        setVerifiedPaymentStatus(true)
+                        setShowPaymentSuccessModal(true)
+                        return
+                      }
+                      
                       if (!res.ok) {
                         console.error('❌ Payment API error:', data)
-                        // If user already has access, refresh payment status to show predictions
-                        if (data.error && data.error.includes('already have access')) {
-                          console.log('🔄 User already has access, refreshing payment status...')
-                          await verifyPaymentStatus()
-                          return
-                        }
                         alert(`Payment error: ${data.error || data.details || 'Unknown error'}`)
                         return
                       }
+                      
                       if (data.paymentLink) {
                         console.log('🔗 Opening payment link:', data.paymentLink)
                         const paymentWindow = window.open(data.paymentLink, '_blank', 'width=500,height=700')
+                        
+                        // Check if payment window opened
+                        if (!paymentWindow) {
+                          alert('Please disable your pop-up blocker and try again')
+                          return
+                        }
+                        
                         const checkPayment = setInterval(async () => {
                           if (paymentWindow && paymentWindow.closed) {
                             clearInterval(checkPayment)
                             console.log('✅ Payment window closed, verifying payment status...')
-                            // Wait only 500ms for payment to process on backend
-                            await new Promise(resolve => setTimeout(resolve, 500))
+                            // Wait 1 second for payment to process on backend
+                            await new Promise(resolve => setTimeout(resolve, 1000))
                             
                             try {
                               console.log('🔍 Fetching fresh payment status from server...')
@@ -364,19 +375,17 @@ export default function PredictionsPage() {
                               if (verifyRes.ok) {
                                 const verifyData = await verifyRes.json()
                                 console.log('📊 User data from server:', verifyData)
-                                console.log('💾 isPredictionPaid value:', verifyData?.user?.isPredictionPaid)
                                 const isPaid = verifyData?.user?.isPredictionPaid === true
                                 console.log('💰 Payment status:', isPaid ? 'PAID ✅' : 'UNPAID ❌')
                                 
                                 if (isPaid) {
                                   console.log('🎉 PAYMENT VERIFIED! Showing predictions...')
-                                  // Update the state immediately to show predictions without redirecting
                                   setVerifiedPaymentStatus(true)
                                   setShowPaymentSuccessModal(true)
                                 } else {
-                                  console.log('⏳ Payment not confirmed yet, retrying...')
-                                  // Retry after a delay
-                                  await new Promise(resolve => setTimeout(resolve, 1000))
+                                  console.log('⏳ Payment not confirmed yet, retrying in 2 seconds...')
+                                  // Retry after longer delay
+                                  await new Promise(resolve => setTimeout(resolve, 2000))
                                   try {
                                     const retryRes = await fetch('/api/auth/me?t=' + Date.now(), { 
                                       method: 'GET',
@@ -395,7 +404,7 @@ export default function PredictionsPage() {
                                         setVerifiedPaymentStatus(true)
                                         setShowPaymentSuccessModal(true)
                                       } else {
-                                        alert('Payment could not be verified. Please try again.')
+                                        alert('Payment verification pending. Please refresh the page in a moment.')
                                       }
                                     }
                                   } catch (retryErr) {

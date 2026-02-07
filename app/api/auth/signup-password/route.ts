@@ -42,7 +42,14 @@ export async function POST(request: NextRequest) {
     }
 
     const res = NextResponse.json({ success: true, user: { id: user.id, email: user.email, name: user.name, balance: Number(user.balance), isPredictionPaid: !!user.is_prediction_paid } })
-    res.cookies.set('session_token', sessionToken, { httpOnly: true, path: '/', sameSite: 'lax', maxAge: 60 * 60 * 24 * 7 })
+    res.cookies.set('session_token', sessionToken, { 
+      httpOnly: true, 
+      path: '/', 
+      sameSite: 'lax', 
+      maxAge: 60 * 60 * 24 * 30,
+      secure: process.env.NODE_ENV === 'production'
+    })
+    console.log('[SIGNUP-PASSWORD] ✅ Session token cookie set for user:', user.email)
     return res
   } catch (err) {
     console.error("/api/auth/signup-password error:", err)
