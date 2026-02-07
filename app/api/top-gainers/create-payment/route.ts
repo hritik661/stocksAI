@@ -40,6 +40,7 @@ export async function POST(req: Request) {
     console.log('[CREATE-PAYMENT] Using database:', useDatabase ? '✓' : '✗ (fallback mode)')
     
     let user: any = null
+    let userId: string | null = null
 
     const isLocalToken = token.startsWith('local')
     
@@ -57,7 +58,8 @@ export async function POST(req: Request) {
           `
           if (userRows?.length) {
             user = userRows[0]
-            console.log('[CREATE-PAYMENT] User found with column:', user.id)
+            userId = String(user.id || user.id).trim() // Ensure it's a string
+            console.log('[CREATE-PAYMENT] User found with column. ID:', userId, 'Email:', user.email)
           }
         } catch (columnError: any) {
           const errorMsg = columnError?.message || String(columnError)
@@ -75,7 +77,8 @@ export async function POST(req: Request) {
             `
             if (userRows?.length) {
               user = { ...userRows[0], is_top_gainer_paid: false }
-              console.log('[CREATE-PAYMENT] User found (fallback):', user.id)
+              userId = String(user.id || user.id).trim() // Ensure it's a string
+              console.log('[CREATE-PAYMENT] User found (fallback). ID:', userId, 'Email:', user.email)
             }
           } else {
             throw columnError
@@ -83,7 +86,8 @@ export async function POST(req: Request) {
         }
       } catch (dbError: any) {
         console.error('[CREATE-PAYMENT] Database lookup failed:', dbError?.message?.slice(0, 100))
-        user = null // Will fall through to local token handling
+        user = null
+        userId = null // Will fall through to local token handling
       }
     }
     
@@ -93,17 +97,26 @@ export async function POST(req: Request) {
       const parts = token.split(':')
       if (parts.length >= 2 && parts[0] === 'local') {
         const userEmail = parts[1]
-        user = { id: userEmail, email: userEmail, name: userEmail.split('@')[0], is_top_gainer_paid: false }
-        console.log('[CREATE-PAYMENT] User created from token:', user.email)
+        // Format user ID the same way login route does: email.replace(/[^a-zA-Z0-9]/g, "_")
+        const formattedId = userEmail.replace(/[^a-zA-Z0-9]/g, "_")
+        user = { id: formattedId, email: userEmail, name: userEmail.split('@')[0], is_top_gainer_paid: false }
+        userId = formattedId
+        console.log('[CREATE-PAYMENT] User created from token. Email:', userEmail, 'Formatted ID:', formattedId)
       } else {
         console.error('[CREATE-PAYMENT] Invalid token format')
         return NextResponse.json({ error: "Unauthorized - Invalid session" }, { status: 401 })
       }
     }
 
+    // Validate we have a user ID
+    if (!userId) {
+      console.error('[CREATE-PAYMENT] No valid user ID after lookup')
+      return NextResponse.json({ error: "Unauthorized - User ID not found" }, { status: 401 })
+    }
+
     // Check if user already has access
     if (user.is_top_gainer_paid) {
-      console.log('[CREATE-PAYMENT] User already has access:', user.id)
+      console.log('[CREATE-PAYMENT] User already has access:', userId)
       return NextResponse.json({ 
         message: "You already have access to top gainers", 
         alreadyPaid: true,
@@ -150,7 +163,7 @@ export async function POST(req: Request) {
             try {
               await sql`
                 INSERT INTO payment_orders (order_id, user_id, amount, currency, status, payment_gateway, product_type, created_at)
-                VALUES (${linkId}, ${user.id}, ${amountPaise/100}, 'INR', 'created', 'razorpay', 'top_gainers', NOW())
+                VALUES (${linkId}, ${userId}, ${amountPaise/100}, 'INR', 'created', 'razorpay', 'top_gainers', NOW())
                 ON CONFLICT (order_id) DO NOTHING
               `
             } catch (e) {
@@ -175,20 +188,25 @@ export async function POST(req: Request) {
     let markedAsPaid = false
     if (useDatabase && sql) {
       try {
-        console.log('[CREATE-PAYMENT] Marking user as paid in database...')
+        console.log('[CREATE-PAYMENT] Marking user as paid in database. UserID:', userId)
         // Insert payment order with PAID status
         await sql`
           INSERT INTO payment_orders (order_id, user_id, amount, currency, status, payment_gateway, product_type, created_at)
-          VALUES (${testLinkId}, ${user.id}, ${amountPaise/100}, 'INR', 'paid', 'razorpay', 'top_gainers', NOW())
+          VALUES (${testLinkId}, ${userId}, ${amountPaise/100}, 'INR', 'paid', 'razorpay', 'top_gainers', NOW())
           ON CONFLICT (order_id) DO UPDATE SET status = 'paid'
         `
+        console.log('[CREATE-PAYMENT] ✅ Payment order inserted/updated')
         
         // Immediately mark user as paid
-        await sql`UPDATE users SET is_top_gainer_paid = true WHERE id = ${user.id}`
+        console.log('[CREATE-PAYMENT] Executing UPDATE query with userId:', userId)
+        const updateResult = await sql`UPDATE users SET is_top_gainer_paid = true WHERE id = ${userId}`
+        console.log('[CREATE-PAYMENT] ✅ UPDATE result:', updateResult)
+        
         markedAsPaid = true
-        console.log('[CREATE-PAYMENT] ✅ User marked as paid:', user.id)
+        console.log('[CREATE-PAYMENT] ✅ User marked as paid:', userId)
       } catch (err) {
         console.error('[CREATE-PAYMENT] DB payment marking error:', err instanceof Error ? err.message : String(err))
+        console.error('[CREATE-PAYMENT] Full error:', err)
         // Continue anyway - still return payment link for the frontend flow
       }
     } else {

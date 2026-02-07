@@ -46,7 +46,9 @@ export async function POST(req: Request) {
       const parts = token.split(':')
       if (parts.length >= 2 && parts[0] === 'local') {
         const userEmail = parts[1]
-        user = { id: userEmail, email: userEmail, name: userEmail.split('@')[0], is_prediction_paid: false }
+        // Format user ID the same way login route does: email.replace(/[^a-zA-Z0-9]/g, "_")
+        const formattedId = userEmail.replace(/[^a-zA-Z0-9]/g, "_")
+        user = { id: formattedId, email: userEmail, name: userEmail.split('@')[0], is_prediction_paid: false }
       } else {
         return NextResponse.json({ error: "Unauthorized - Invalid session" }, { status: 401 })
       }
