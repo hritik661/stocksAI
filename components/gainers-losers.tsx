@@ -161,6 +161,7 @@ export function GainersLosers() {
                     const authCheck = await fetch('/api/auth/me?t=' + Date.now(), {
                       method: 'GET',
                       cache: 'no-store',
+                      credentials: 'include',
                       headers: {
                         'Cache-Control': 'no-cache, no-store, must-revalidate',
                         'Pragma': 'no-cache',
@@ -190,7 +191,7 @@ export function GainersLosers() {
                           
                           try {
                             // Verify payment status on server
-                            const verifyRes = await fetch('/api/auth/me?t=' + Date.now(), { cache: 'no-store' })
+                            const verifyRes = await fetch('/api/auth/me?t=' + Date.now(), { cache: 'no-store', credentials: 'include' })
                             if (verifyRes.ok) {
                               const userData = await verifyRes.json()
                               

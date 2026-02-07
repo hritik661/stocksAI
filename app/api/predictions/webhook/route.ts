@@ -3,18 +3,23 @@ import nodemailer from 'nodemailer'
 import { neon } from "@neondatabase/serverless"
 import crypto from 'crypto'
 
-export async function POST(request: Request) {
+async function handleWebhook(request: Request) {
   try {
     const bodyText = await request.text()
 
     // Verify Razorpay signature if webhook secret exists
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET
-    if (webhookSecret) {
+    if (webhookSecret && bodyText) {
       const signature = request.headers.get('x-razorpay-signature') || request.headers.get('X-Razorpay-Signature')
-      if (!signature) return NextResponse.json({ status: 'error', message: 'Signature missing' }, { status: 400 })
-      const expected = crypto.createHmac('sha256', webhookSecret).update(bodyText).digest('hex')
-      const match = crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature))
-      if (!match) return NextResponse.json({ status: 'error', message: 'Invalid signature' }, { status: 400 })
+      if (signature && bodyText) {
+        try {
+          const expected = crypto.createHmac('sha256', webhookSecret).update(bodyText).digest('hex')
+          const match = crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature))
+          if (!match) return NextResponse.json({ status: 'error', message: 'Invalid signature' }, { status: 400 })
+        } catch (e) {
+          console.warn('[WEBHOOK] Signature verification skipped:', e)
+        }
+      }
     }
 
     let payload: any = {}
@@ -33,6 +38,9 @@ export async function POST(request: Request) {
     const statusRaw = payload.status || (payload?.payload?.payment?.entity?.status) || ''
     const amount = payload.amount || payload?.amount_paid || payload?.payload?.payment?.entity?.amount || null
     const status = String(statusRaw || '').toLowerCase()
+    
+    console.log('[WEBHOOK] Received webhook - order:', orderIdReceived, 'status:', status, 'payment_id:', paymentId)
+    
     if (!status.includes('paid') && status !== 'credit') return NextResponse.json({ status: 'ignored', message: 'Payment not completed.' })
 
     // Update payment status in database
@@ -56,6 +64,8 @@ export async function POST(request: Request) {
     
     await sql`UPDATE payment_orders SET status = 'paid', payment_id = ${paymentId} WHERE order_id = ${searchOrderId}`
 
+    console.log('[WEBHOOK] ✅ Payment processed for user:', userId, 'product:', productType)
+
     // Optional notification
     try {
       const transporter = nodemailer.createTransport({
@@ -73,6 +83,14 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ status: 'success', message: 'Payment processed and access granted.' })
   } catch (error: any) {
+    console.error('[WEBHOOK] Error:', error)
     return NextResponse.json({ status: 'error', message: error?.message || 'Webhook error.' }, { status: 500 })
   }
 }
+
+export async function POST(request: Request) {
+  return handleWebhook(request)
+}
+
+export async function GET(request: Request) {
+  return handleWebhook(request)

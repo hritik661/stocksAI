@@ -3,7 +3,7 @@ import nodemailer from 'nodemailer'
 import { neon } from "@neondatabase/serverless"
 import crypto from 'crypto'
 
-export async function POST(request: Request) {
+async function handleWebhook(request: Request) {
   try {
     const bodyText = await request.text()
 
@@ -76,3 +76,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ status: 'error', message: error?.message || 'Webhook error.' }, { status: 500 })
   }
 }
+
+export async function POST(request: Request) {
+  return handleWebhook(request)
+}
+
+export async function GET(request: Request) {
+  return handleWebhook(request)

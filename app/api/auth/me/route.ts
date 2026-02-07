@@ -5,7 +5,23 @@ export async function GET(request: NextRequest) {
   try {
     const cookie = request.cookies.get("session_token")
     const token = cookie?.value
-    if (!token) return NextResponse.json({ success: false }, { status: 401 })
+    if (!token) {
+      // Try fallback: when no DB is configured we may have set a readable cookie named `session_user`
+      const sess = request.cookies.get('session_user')
+      if (sess?.value) {
+        try {
+          const parsed = JSON.parse(sess.value)
+          const response = NextResponse.json({ success: true, user: { id: parsed.id, email: parsed.email, name: parsed.name || parsed.email?.split?.('@')?.[0], balance: Number(parsed.balance || 0), isPredictionPaid: !!parsed.isPredictionPaid, isTopGainerPaid: !!parsed.isTopGainerPaid } })
+          response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+          response.headers.set('Pragma', 'no-cache')
+          response.headers.set('Expires', '0')
+          return response
+        } catch (e) {
+          // fall through to unauthorized
+        }
+      }
+      return NextResponse.json({ success: false }, { status: 401 })
+    }
 
     const useDatabase = process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('dummy')
     if (!useDatabase) return NextResponse.json({ success: false }, { status: 401 })

@@ -36,7 +36,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Initialize by asking the server who the current session belongs to.
     const initializeAuth = async () => {
       try {
-        console.log('[AUTH] Initializing auth - checking for existing session')
+        console.log('[AUTH] 🔍 Initializing auth - checking for existing session')
+        console.log('[AUTH] 📍 Current URL:', typeof window !== 'undefined' ? window.location.href : 'N/A')
+        
+        // Check if cookies are set before making request
+        if (typeof document !== 'undefined') {
+          console.log('[AUTH] 🍪 Cookies in document:', document.cookie || '(none)')
+        }
+        
         const res = await fetch("/api/auth/me", { 
           method: "GET",
           cache: 'no-store',
@@ -47,8 +54,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             'Expires': '0'
           }
         })
+        
+        console.log('[AUTH] 📡 /api/auth/me response status:', res.status)
+        console.log('[AUTH] 📡 Response headers:', {
+          'content-type': res.headers.get('content-type'),
+          'set-cookie': res.headers.get('set-cookie') || '(none)'
+        })
+        
         if (res.ok) {
           const data = await res.json()
+          console.log('[AUTH] 📊 Response data:', { success: data.success, user: data.user?.email })
           if (data?.user) {
             console.log('[AUTH] ✅ Session found, user logged in:', data.user.email)
             setUser(data.user)
@@ -58,12 +73,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } else {
           console.log('[AUTH] ℹ️ No session found (status:', res.status + '), user is guest')
+          const errData = await res.json().catch(() => ({}))
+          console.log('[AUTH] Error from auth/me:', errData)
           setUser(null)
         }
       } catch (err) {
         console.error('[AUTH] ❌ Error initializing auth:', err)
         setUser(null)
       } finally {
+        console.log('[AUTH] ✅ Auth initialization complete, isLoading = false')
         setIsLoading(false)
       }
     }
@@ -79,6 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!email || !password) return { success: false, error: "Email and password are required" }
       const res = await fetch("/api/auth/signup-password", {
         method: "POST",
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.toLowerCase(), name, password }),
       })
@@ -96,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!email || !password) return { success: false, error: "Email and password are required" }
       const res = await fetch("/api/auth/login-password", {
         method: "POST",
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.toLowerCase(), password }),
       })
@@ -148,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ;(async () => {
       try {
         console.log('🔐 [LOGOUT] Calling logout API to clear server session')
-        const res = await fetch("/api/auth/logout", { method: "POST" })
+        const res = await fetch("/api/auth/logout", { method: "POST", credentials: 'include' })
         if (res.ok) {
           console.log('✅ [LOGOUT] Server session cleared successfully')
         } else {
@@ -183,7 +203,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Refresh user from server - payment handlers should update DB, so re-fetch the session user
     ;(async () => {
       try {
-        const res = await fetch("/api/auth/me", { method: "GET" })
+        const res = await fetch("/api/auth/me", { method: "GET", credentials: 'include' })
         if (res.ok) {
           const data = await res.json()
           if (data?.user) setUser(data.user)
@@ -201,14 +221,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (!emailNormalized || !otpNormalized) return { success: false, error: "Email and OTP are required" }
       
-      console.log("[AUTH] Logging in with OTP - email:", emailNormalized, "otp length:", otpNormalized.length)
+      console.log("[AUTH] 🔐 Logging in with OTP - email:", emailNormalized, "otp length:", otpNormalized.length)
       
       // Verify OTP
       const response = await fetch("/api/auth/verify-otp", {
         method: "POST",
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: emailNormalized, otp: otpNormalized }),
       })
+
+      console.log("[AUTH] 📡 OTP verify response status:", response.status)
+      console.log("[AUTH] 📡 Response cookies:", response.headers.get('set-cookie') || '(none)')
 
       const data = await response.json()
 
@@ -228,6 +252,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Server sets HttpOnly cookie. Just set user state from response.
       setUser(userData)
       console.log("[AUTH] ✅ Login successful for:", emailNormalized)
+      console.log("[AUTH] 🍪 Check browser cookies - session_token should be set")
 
       return { success: true, isNewUser: data.isNewUser }
     } catch (err) {

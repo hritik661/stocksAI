@@ -17,6 +17,7 @@ const handlePredictionClick = async (
     const authCheck = await fetch('/api/auth/me?t=' + Date.now(), {
       method: 'GET',
       cache: 'no-store',
+      credentials: 'include',
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
@@ -61,7 +62,7 @@ const handlePredictionClick = async (
             if (!verified) {
               // Give webhook a short grace period then check auth/me
               await new Promise(resolve => setTimeout(resolve, 1200))
-              const verifyRes = await fetch(`/api/auth/me?t=${Date.now()}`, { cache: 'no-store' })
+              const verifyRes = await fetch(`/api/auth/me?t=${Date.now()}`, { cache: 'no-store', credentials: 'include' })
               if (verifyRes.ok) {
                 const userData = await verifyRes.json()
                 if (userData?.user?.isPredictionPaid) verified = true
@@ -105,9 +106,9 @@ export default function PredictionsHero() {
       const timer = setTimeout(async () => {
         try {
           if (markPredictionsAsPaid) await markPredictionsAsPaid()
-        } catch (e) {
+          } catch (e) {
           // fallback: request /api/auth/me to refresh
-          try { await fetch('/api/auth/me') } catch (err) {}
+          try { await fetch('/api/auth/me', { credentials: 'include' }) } catch (err) {}
         }
         // Refresh the page to show predictions
         window.location.href = '/predictions?from=payment'
@@ -125,8 +126,8 @@ export default function PredictionsHero() {
       <div className="relative z-10">
         {/* Smaller Header - Increased Logo Size */}
           <div className="flex items-center gap-3 sm:gap-5 mb-4 sm:mb-6">
-          <div className="h-12 w-12 sm:h-20 sm:w-20 md:h-24 md:w-24 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center shrink-0">
-            <Zap className="h-7 w-7 sm:h-12 sm:w-12 md:h-14 md:w-14 text-primary animate-pulse" />
+          <div className="h-12 w-12 sm:h-20 sm:w-20 md:h-16 md:w-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center shrink-0">
+            <Zap className="h-7 w-7 sm:h-12 sm:w-12 md:h-10 md:w-10 text-primary animate-pulse" />
           </div>
           <div>
             <h2 className="text-base sm:text-2xl font-extrabold text-foreground mb-1 sm:mb-2">AI-Powered Stock Predictions</h2>

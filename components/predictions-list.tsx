@@ -114,10 +114,10 @@ export function PredictionsList() {
   const { deductBalance, addBalance } = useBalance()
   const { toast } = useToast()
 
-  // ⚠️ CRITICAL GUARD: RETURN NOTHING if user hasn't paid
-  // This prevents ANY stock rendering without payment
-  if (!user || user.isPredictionPaid !== true) {
-    console.warn('🔒 PredictionsList blocked - user has not paid for predictions')
+  // Guard: If no user at all, return nothing
+  // Otherwise show predictions (page is the gatekeeper for isPredictionPaid)
+  if (!user) {
+    console.warn('🔒 PredictionsList blocked - no user logged in')
     return null
   }
   
@@ -504,7 +504,7 @@ export function PredictionsList() {
               </div>
               <div className="text-right">
                 <div className="font-mono font-bold text-base md:text-lg">₹{stock.price ? stock.price.toLocaleString("en-IN") : "0"}</div>
-                <div className={`text-[11px] md:text-sm font-bold px-1.5 md:px-3 py-1 md:py-1.5 rounded-md md:rounded-md ${stock.change >= 0 ? "text-emerald-700 md:text-green-950 md:bg-green-600/30 md:border md:border-green-700/60 md:font-extrabold" : "text-red-600 md:bg-red-50 md:border md:border-red-300"}`}>
+                <div className={`text-[11px] md:text-sm font-bold ${stock.change >= 0 ? "text-green-600 md:text-green-700" : "text-red-700 md:text-red-800"}`}>
                   {stock.change >= 0 ? "+" : ""}
                   {(stock.changePercent || 0).toFixed(2)}%
                 </div>

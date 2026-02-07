@@ -11,7 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Sparkles, Lock, TrendingUp } from "lucide-react"
 
 export default function TopGainersPage() {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, setUserFromData } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [authReady, setAuthReady] = useState(false)
@@ -35,6 +35,7 @@ export default function TopGainersPage() {
         method: 'GET',
         cache: 'no-store',
         signal: controller.signal,
+        credentials: 'include',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
@@ -97,6 +98,7 @@ export default function TopGainersPage() {
         const res = await fetch('/api/auth/me?t=' + Date.now(), {
           method: 'GET',
           cache: 'no-store',
+          credentials: 'include',
           signal: controller.signal,
           headers: {
             'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -240,7 +242,7 @@ export default function TopGainersPage() {
               <div className="h-10 w-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div key={verifiedPaymentStatus} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {topGainers.length > 0 ? (
                 topGainers.map((stock: any, idx: number) => (
                   <div
@@ -390,12 +392,51 @@ export default function TopGainersPage() {
                       return
                     }
                     if (data.paymentLink) {
+                      const orderId = data.orderId || data.order_id || data.order || null
                       const paymentWindow = window.open(data.paymentLink, '_blank', 'width=500,height=700')
                       const checkPayment = setInterval(async () => {
                         if (paymentWindow && paymentWindow.closed) {
                           clearInterval(checkPayment)
-                          // Wait 2 seconds then verify
-                          setTimeout(() => verifyPayment(), 2000)
+                          
+                          // Retry logic with exponential backoff (1s, 2s, 3s, 4s, 5s)
+                          const delays = [1000, 2000, 3000, 4000, 5000]
+                          let verified = false
+                          
+                          for (let i = 0; i < delays.length && !verified; i++) {
+                            await new Promise(resolve => setTimeout(resolve, delays[i]))
+                            
+                            try {
+                              const verifyRes = await fetch(`/api/auth/me?t=${Date.now()}`, {
+                                cache: 'no-store',
+                                credentials: 'include',
+                                headers: {
+                                  'Cache-Control': 'no-cache, no-store, must-revalidate',
+                                  'Pragma': 'no-cache',
+                                }
+                              })
+                              
+                              if (verifyRes.ok) {
+                                const userData = await verifyRes.json()
+                                if (userData?.user?.isTopGainerPaid) {
+                                  verified = true
+                                  console.log('✅ Top Gainer payment verified from server: true')
+                                  if (userData?.user && setUserFromData) {
+                                    setUserFromData(userData.user)
+                                  }
+                                  setVerifiedPaymentStatus(true)
+                                  setShowPaymentSuccessModal(true)
+                                  break
+                                }
+                              }
+                            } catch (err) {
+                              console.warn(`Retry ${i + 1} failed:`, err)
+                            }
+                          }
+                          
+                          if (!verified) {
+                            alert('Payment verification pending. Please refresh the page in a moment.')
+                            window.location.reload()
+                          }
                         }
                       }, 500)
                     }

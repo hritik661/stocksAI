@@ -30,6 +30,13 @@ export async function POST(request: NextRequest) {
       maxAge: 0,
       sameSite: 'lax'
     })
+    // Clear fallback session_user cookie if present
+    res.cookies.set('session_user', '', {
+      httpOnly: false,
+      path: '/',
+      maxAge: 0,
+      sameSite: 'lax'
+    })
     
     console.log('✅ [LOGOUT] Logout complete, redirecting to home')
     return res

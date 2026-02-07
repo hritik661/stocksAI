@@ -119,8 +119,24 @@ export async function POST(request: NextRequest) {
       path: '/',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 30, // 30 days
-      secure: true // Always secure for HTTPS (Vercel prod + localhost HTTPS)
+      secure: process.env.NODE_ENV === 'production'
     })
+    // If database isn't configured (local/dev fallback), also set a readable session_user cookie
+    // so the client can persist a lightweight user object across refreshes.
+    if (!useDatabase) {
+      try {
+        const sessUser = JSON.stringify({ id: userId, email: emailLower, balance: userBalance })
+        response.cookies.set('session_user', sessUser, {
+          httpOnly: false,
+          path: '/',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 30,
+          secure: process.env.NODE_ENV === 'production'
+        })
+      } catch (e) {
+        console.warn('[OTP-VERIFY] ⚠️ Failed to set session_user cookie fallback:', e)
+      }
+    }
     console.log('[OTP-VERIFY] ✅ Session token cookie set, expires in 30 days')
     return response
   } catch (error) {

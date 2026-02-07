@@ -13,7 +13,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Sparkles, Lock } from "lucide-react"
 
 export default function PredictionsPage() {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, markPredictionsAsPaid, setUserFromData } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [authReady, setAuthReady] = useState(false)
@@ -30,6 +30,7 @@ export default function PredictionsPage() {
       const res = await fetch('/api/auth/me?t=' + Date.now(), {
         method: 'GET',
         cache: 'no-store',
+        credentials: 'include',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
@@ -75,6 +76,7 @@ export default function PredictionsPage() {
         const res = await fetch('/api/auth/me?t=' + Date.now(), {
           method: 'GET',
           cache: 'no-store',
+          credentials: 'include',
           signal: controller.signal,
           headers: {
             'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -90,6 +92,13 @@ export default function PredictionsPage() {
           const paid = data?.user?.isPredictionPaid === true
           console.log('✅ Payment verified from server:', paid, 'User:', data?.user?.email, 'Full user:', data?.user)
           setVerifiedPaymentStatus(paid)
+          
+          // CRITICAL: Update user in context so components see updated isPredictionPaid
+          if (paid && data?.user && setUserFromData) {
+            console.log('🔄 Updating user in auth context with payment status...')
+            setUserFromData(data.user)
+            console.log('✅ User context updated with isPredictionPaid:', data.user.isPredictionPaid)
+          }
 
           // If user came from payment success, log it
           if (searchParams.get('from') === 'payment' || searchParams.get('success') === 'paid') {
@@ -226,7 +235,7 @@ export default function PredictionsPage() {
               ) : (
               <div className="flex flex-col lg:flex-row gap-4 md:gap-8">
                 <div className="flex-1">
-                  <PredictionsList />
+                  <PredictionsList key={`predictions-${verifiedPaymentStatus}`} />
                 </div>
                 {/* NewsSection removed as per user request */}
               </div>
@@ -356,45 +365,98 @@ export default function PredictionsPage() {
                             console.log('✅ Payment window closed, attempting server-side verify via orderId...')
                             // Prefer calling verify-payment with order id so server checks DB/webhook
                             const orderId = data.orderId || data.order_id || data.order || null
-                            try {
-                              let verified = false
-                              if (orderId) {
-                                const resp = await fetch(`/api/predictions/verify-payment?order_id=${encodeURIComponent(orderId)}&api=1`, { headers: { Accept: 'application/json' } })
-                                if (resp.ok) {
-                                  const json = await resp.json()
-                                  console.log('🔎 verify-payment response:', json)
-                                  verified = !!json.verified
-                                }
-                              }
+                            
+                            // Retry logic with exponential backoff
+                            let verified = false
+                            let attemptCount = 0
+                            const maxAttempts = 5
+                            
+                            while (!verified && attemptCount < maxAttempts) {
+                              try {
+                                // Calculate delay: 1000ms, 2000ms, 3000ms, 4000ms, 5000ms
+                                const delay = 1000 * (attemptCount + 1)
+                                console.log(`⏳ Payment verification attempt ${attemptCount + 1}/${maxAttempts} (waiting ${delay}ms for webhook)...`)
+                                await new Promise(resolve => setTimeout(resolve, delay))
 
-                              // Fallback to auth/me if verify-payment didn't confirm
-                              if (!verified) {
-                                await new Promise(resolve => setTimeout(resolve, 1200))
-                                const verifyRes = await fetch('/api/auth/me?t=' + Date.now(), { 
+                                if (orderId) {
+                                  const resp = await fetch(`/api/predictions/verify-payment?order_id=${encodeURIComponent(orderId)}&api=1`, { 
+                                    headers: { Accept: 'application/json' },
+                                    credentials: 'include'
+                                  })
+                                  if (resp.ok) {
+                                    const json = await resp.json()
+                                    console.log(`🔎 verify-payment response (attempt ${attemptCount + 1}):`, json)
+                                    if (json?.verified) {
+                                      verified = true
+                                      break
+                                    }
+                                  }
+                                }
+
+                                // Also try /api/auth/me as fallback
+                                if (!verified) {
+                                  const verifyRes = await fetch('/api/auth/me?t=' + Date.now(), { 
+                                    method: 'GET',
+                                    cache: 'no-store',
+                                    credentials: 'include',
+                                    headers: {
+                                      'Cache-Control': 'no-cache, no-store, must-revalidate',
+                                      'Pragma': 'no-cache',
+                                      'Expires': '0'
+                                    }
+                                  })
+                                  if (verifyRes.ok) {
+                                    const verifyData = await verifyRes.json()
+                                    console.log(`📊 /api/auth/me response (attempt ${attemptCount + 1}):`, { isPredictionPaid: verifyData?.user?.isPredictionPaid })
+                                    if (verifyData?.user?.isPredictionPaid === true) {
+                                      verified = true
+                                      break
+                                    }
+                                  }
+                                }
+                                
+                                attemptCount++
+                              } catch (err) {
+                                console.warn(`❌ Verification attempt ${attemptCount + 1} error:`, err)
+                                attemptCount++
+                              }
+                            }
+
+                            if (verified) {
+                              console.log('🎉 PAYMENT VERIFIED! Refreshing user data...')
+                              // Refresh user data to get isPredictionPaid = true
+                              try {
+                                const refreshRes = await fetch('/api/auth/me?t=' + Date.now(), {
                                   method: 'GET',
                                   cache: 'no-store',
+                                  credentials: 'include',
                                   headers: {
                                     'Cache-Control': 'no-cache, no-store, must-revalidate',
                                     'Pragma': 'no-cache',
                                     'Expires': '0'
                                   }
                                 })
-                                if (verifyRes.ok) {
-                                  const verifyData = await verifyRes.json()
-                                  verified = verifyData?.user?.isPredictionPaid === true
+                                if (refreshRes.ok) {
+                                  const refreshData = await refreshRes.json()
+                                  if (refreshData?.user) {
+                                    console.log('✅ User data refreshed:', refreshData.user.email, 'isPredictionPaid:', refreshData.user.isPredictionPaid)
+                                  }
                                 }
+                              } catch (refreshErr) {
+                                console.warn('⚠️ Failed to refresh user data:', refreshErr)
                               }
-
-                              if (verified) {
-                                console.log('🎉 PAYMENT VERIFIED! Showing predictions...')
-                                setVerifiedPaymentStatus(true)
-                                setShowPaymentSuccessModal(true)
-                              } else {
-                                alert('Payment verification pending. Please refresh the page in a moment.')
-                              }
-                            } catch (err) {
-                              console.error('❌ Error verifying payment:', err)
-                              alert('Payment verification error. Please refresh the page.')
+                              
+                              console.log('🎉 PAYMENT VERIFIED! Showing predictions...')
+                              setVerifiedPaymentStatus(true)
+                              setShowPaymentSuccessModal(true)
+                              // Auto-redirect to predictions page with success params after 2 seconds
+                              setTimeout(() => {
+                                window.location.href = '/predictions?from=payment&success=paid'
+                              }, 2000)
+                            } else {
+                              console.error('❌ Payment verification failed after', maxAttempts, 'attempts')
+                              alert('Payment processing is taking longer than expected. Please refresh the page in a moment.')
+                              window.location.href = '/predictions'
                             }
                           }
                         }, 500)

@@ -79,8 +79,8 @@ export async function POST(req: Request) {
         customer: { name: user.name || user.email, email: user.email },
         notify: { sms: false, email: true },
         reminder_enable: false,
-        callback_url: origin ? `${origin}/api/predictions/verify-payment` : undefined,
-        callback_method: "get"
+        callback_url: origin ? `${origin}/api/predictions/webhook` : undefined,
+        callback_method: "post"
       }
 
       try {
@@ -112,26 +112,31 @@ export async function POST(req: Request) {
       }
     }
 
-    // Fallback: test short-link (can be overridden via env)
-    const testLinkId = process.env.RAZORPAY_TEST_ORDER_ID || 'aplink_SBjQppJn9VnR4z'
-    const testLink = process.env.RAZORPAY_TEST_LINK || process.env.NEXT_PUBLIC_RAZORPAY_TEST_LINK || 'https://rzp.io/rzp/huikjd68'
+    // For development/test: Create a test payment order and immediately mark as paid
+    console.log('💰 [CREATE-PAYMENT] TEST/DEV MODE: Using test payment link and immediately marking user as paid')
+    const testLinkId = `aplink_test_${Date.now()}_${Math.random().toString(36).slice(2)}`
+    const testLink = process.env.RAZORPAY_TEST_LINK || process.env.NEXT_PUBLIC_RAZORPAY_TEST_LINK || 'https://rzp.io/rzp/9NJNueG'
+    
     if (useDatabase && sql) {
       try {
+        // Insert payment order with PAID status
         await sql`
           INSERT INTO payment_orders (order_id, user_id, amount, currency, status, payment_gateway, product_type, created_at)
           VALUES (${testLinkId}, ${user.id}, 1.00, 'INR', 'paid', 'razorpay', 'predictions', NOW())
           ON CONFLICT (order_id) DO UPDATE SET status = 'paid'
         `
+        console.log('✅ [CREATE-PAYMENT] Payment order created as PAID:', testLinkId, 'for user:', user.id)
+        
         // IMMEDIATELY mark user as paid for test/dev mode
-        console.log('💰 [CREATE-PAYMENT] TEST MODE: Marking user as paid:', user.id)
         await sql`UPDATE users SET is_prediction_paid = true WHERE id = ${user.id}`
-        console.log('✅ [CREATE-PAYMENT] TEST MODE: User marked as paid in DB')
+        console.log('✅ [CREATE-PAYMENT] User marked as paid in database:', user.id)
       } catch (err) {
         console.error('[CREATE-PAYMENT] DB error:', err)
       }
     }
-    console.log('✅ [CREATE-PAYMENT] Returning test payment link for user:', user.id)
-    return NextResponse.json({ orderId: testLinkId, paymentLink: testLink, raw: { test: true } })
+    
+    console.log('✅ [CREATE-PAYMENT] Returning payment link for user:', user.id, 'Order ID:', testLinkId)
+    return NextResponse.json({ orderId: testLinkId, paymentLink: testLink })
 
   } catch (error) {
     console.error('[CREATE-PAYMENT] Error:', error)
